@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>认识视力表 👁️</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --bg: #FFF9F0;
+    --sky: #E8F4FF;
+    --yellow: #FFD93D;
+    --orange: #FF9A3C;
+    --coral: #FF6B6B;
+    --green: #6BCB77;
+    --blue: #4D96FF;
+    --purple: #C77DFF;
+    --dark: #2D2D2D;
+    --light-text: #888;
+  }
+
+  body {
+    background: var(--bg);
+    font-family: 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    touch-action: manipulation;
+  }
+
+  /* Stars background */
+  .stars {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 0;
+    overflow: hidden;
+  }
+  .star {
+    position: absolute;
+    border-radius: 50%;
+    background: var(--yellow);
+    opacity: 0;
+    animation: twinkle 3s infinite;
+  }
+
+  @keyframes twinkle {
+    0%, 100% { opacity: 0; transform: scale(0.5); }
+    50% { opacity: 0.6; transform: scale(1); }
+  }
+
+  /* Main container */
+  .container {
+    position: relative; z-index: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    width: 100vw; height: 100vh;
+    gap: 0;
+    padding: 20px;
+  }
+
+  /* Score display */
+  .score-bar {
+    display: flex; gap: 8px; align-items: center;
+    margin-bottom: 12px;
+  }
+  .star-icon {
+    font-size: 28px;
+    transition: transform 0.3s;
+  }
+  .star-icon.pop { animation: starPop 0.4s ease; }
+  @keyframes starPop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.6) rotate(20deg); }
+    100% { transform: scale(1); }
+  }
+  .score-num {
+    font-size: 28px; font-weight: 900;
+    color: var(--orange);
+    min-width: 60px; text-align: center;
+    background: white;
+    border-radius: 20px;
+    padding: 4px 16px;
+    box-shadow: 0 3px 0 #e0c070;
+  }
+
+  /* Character (bunny) */
+  .character-wrap {
+    position: relative;
+    margin-bottom: 8px;
+  }
+  .character {
+    font-size: clamp(48px, 10vw, 72px);
+    display: block;
+    animation: bounce 2s ease-in-out infinite;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+    transition: transform 0.2s;
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  .speech-bubble {
+    position: absolute;
+    top: -60px; left: 50%; transform: translateX(-50%);
+    background: white;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: clamp(14px, 3vw, 18px);
+    font-weight: 700;
+    color: var(--dark);
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .speech-bubble::after {
+    content: '';
+    position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: white;
+  }
+  .speech-bubble.show { opacity: 1; }
+
+  /* E letter display */
+  .e-container {
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 16px;
+  }
+
+  .e-letter {
+    display: flex; align-items: center; justify-content: center;
+    width: clamp(150px, 32vw, 220px);
+    height: clamp(150px, 32vw, 220px);
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 8px 0 #ddd, 0 0 0 4px #eee;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+  }
+  .e-svg {
+    width: 65%; height: 65%;
+  }
+
+  .e-letter::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 60%);
+    border-radius: 24px;
+    pointer-events: none;
+  }
+
+  /* Confetti burst overlay */
+  .burst {
+    position: absolute; inset: 0;
+    border-radius: 24px;
+    pointer-events: none;
+    overflow: hidden;
+    opacity: 0;
+  }
+  .burst.active { animation: burstAnim 0.5s ease forwards; }
+  @keyframes burstAnim {
+    0% { opacity: 1; background: radial-gradient(circle, rgba(255,217,61,0.7) 0%, transparent 70%); transform: scale(0.8); }
+    100% { opacity: 0; transform: scale(1.5); }
+  }
+
+  /* Direction hint arrow under E */
+  .hint-arrow {
+    font-size: clamp(32px, 7vw, 48px);
+    margin-top: 6px;
+    opacity: 0;
+    transition: opacity 0.4s, transform 0.4s;
+    transform: scale(0.5);
+  }
+  .hint-arrow.show {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* Direction buttons */
+  .buttons-wrap {
+    position: relative;
+    width: clamp(220px, 55vw, 320px);
+    height: clamp(220px, 55vw, 320px);
+    margin-top: 8px;
+  }
+
+  .dir-btn {
+    position: absolute;
+    width: clamp(70px, 16vw, 96px);
+    height: clamp(70px, 16vw, 96px);
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: clamp(28px, 7vw, 42px);
+    background: white;
+    box-shadow: 0 6px 0 #ccc, 0 0 0 3px #eee;
+    transition: transform 0.12s, box-shadow 0.12s;
+    -webkit-user-select: none; user-select: none;
+    will-change: transform;
+  }
+  .dir-btn:active {
+    transform: translateY(4px) scale(0.92);
+    box-shadow: 0 2px 0 #ccc, 0 0 0 3px #eee;
+  }
+  .dir-btn.correct {
+    background: var(--green);
+    box-shadow: 0 6px 0 #3a9e46, 0 0 0 3px #3a9e46;
+    animation: correctPop 0.4s ease;
+  }
+  .dir-btn.wrong {
+    background: var(--coral);
+    box-shadow: 0 6px 0 #c94040, 0 0 0 3px #c94040;
+    animation: wrongShake 0.4s ease;
+  }
+  @keyframes correctPop {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.25) translateY(-4px); }
+    100% { transform: scale(1); }
+  }
+  @keyframes wrongShake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-6px); }
+    80% { transform: translateX(6px); }
+  }
+
+  /* Button positions */
+  .dir-btn[data-dir="up"]    { top: 0; left: 50%; transform: translateX(-50%); }
+  .dir-btn[data-dir="down"]  { bottom: 0; left: 50%; transform: translateX(-50%); }
+  .dir-btn[data-dir="left"]  { left: 0; top: 50%; transform: translateY(-50%); }
+  .dir-btn[data-dir="right"] { right: 0; top: 50%; transform: translateY(-50%); }
+
+  .dir-btn[data-dir="up"]:active    { transform: translateX(-50%) translateY(4px) scale(0.92); }
+  .dir-btn[data-dir="down"]:active  { transform: translateX(-50%) translateY(-4px) scale(0.92); }
+  .dir-btn[data-dir="left"]:active  { transform: translateY(-50%) translateX(4px) scale(0.92); }
+  .dir-btn[data-dir="right"]:active { transform: translateY(-50%) translateX(-4px) scale(0.92); }
+
+  .dir-btn.correct[data-dir="up"]    { transform: translateX(-50%) scale(1.25) translateY(-4px); }
+  .dir-btn.correct[data-dir="down"]  { transform: translateX(-50%) scale(1.25) translateY(4px); }
+  .dir-btn.correct[data-dir="left"]  { transform: translateY(-50%) scale(1.25) translateX(-4px); }
+  .dir-btn.correct[data-dir="right"] { transform: translateY(-50%) scale(1.25) translateX(4px); }
+
+  /* Center of buttons grid — small dot */
+  .btn-center {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: #ddd;
+  }
+
+  /* Celebrate overlay */
+  .celebrate {
+    position: fixed; inset: 0; z-index: 100;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(6px);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .celebrate.show { opacity: 1; pointer-events: all; }
+  .celebrate-emoji { font-size: 80px; animation: superBounce 0.6s ease infinite alternate; }
+  @keyframes superBounce {
+    from { transform: scale(1) rotate(-5deg); }
+    to { transform: scale(1.15) rotate(5deg); }
+  }
+  .celebrate-text {
+    font-size: clamp(28px, 6vw, 42px);
+    font-weight: 900; color: var(--orange);
+    margin: 16px 0 8px;
+  }
+  .celebrate-sub {
+    font-size: clamp(16px, 3.5vw, 22px);
+    color: var(--light-text);
+    margin-bottom: 24px;
+  }
+  .next-btn {
+    background: var(--orange);
+    color: white; border: none;
+    font-size: clamp(18px, 4vw, 24px);
+    font-weight: 800;
+    padding: 16px 40px;
+    border-radius: 50px;
+    box-shadow: 0 6px 0 #c06000;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+  .next-btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 #c06000;
+  }
+
+  /* Confetti */
+  .confetti-piece {
+    position: fixed;
+    width: 10px; height: 10px;
+    pointer-events: none; z-index: 101;
+    border-radius: 2px;
+    animation: confettiFall linear forwards;
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* Hint button */
+  .hint-btn {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--purple);
+    color: white; border: none;
+    font-size: 14px; font-weight: 700;
+    padding: 10px 18px;
+    border-radius: 30px;
+    box-shadow: 0 4px 0 #8b44cc;
+    cursor: pointer;
+    z-index: 10;
+    transition: transform 0.1s;
+  }
+  .hint-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #8b44cc; }
+
+  /* Progress dots */
+  .progress {
+    display: flex; gap: 8px; margin-bottom: 10px;
+  }
+  .dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: #ddd;
+    transition: background 0.3s, transform 0.3s;
+  }
+  .dot.done { background: var(--green); transform: scale(1.2); }
+  .dot.current { background: var(--orange); transform: scale(1.3); animation: dotPulse 1s ease infinite alternate; }
+  @keyframes dotPulse { from { transform: scale(1.1); } to { transform: scale(1.4); } }
+</style>
+</head>
+<body>
+
+<!-- Stars BG -->
+<div class="stars" id="stars"></div>
+
+<!-- Celebrate overlay -->
+<div class="celebrate" id="celebrate">
+  <div class="celebrate-emoji" id="celebEmoji">🎉</div>
+  <div class="celebrate-text" id="celebText">太棒了！</div>
+  <div class="celebrate-sub" id="celebSub">答对了 10 题！</div>
+  <button class="next-btn" onclick="resetGame()">再玩一次 🐰</button>
+</div>
+
+<!-- Main -->
+<div class="container">
+
+  <!-- Score -->
+  <div class="score-bar">
+    <span id="starDisplay" class="star-icon">⭐</span>
+    <div class="score-num" id="scoreNum">0</div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress" id="progress"></div>
+
+  <!-- Character -->
+  <div class="character-wrap">
+    <div class="speech-bubble" id="bubble">开口朝哪边？</div>
+    <span class="character" id="bunny">🐰</span>
+  </div>
+
+  <!-- E letter -->
+  <div class="e-container">
+    <div class="e-letter" id="eLetter">
+      <!-- Standard optotype E: 5×5 grid, open to the right -->
+      <svg class="e-svg" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+        <!-- top bar -->
+        <rect x="5" y="5"  width="40" height="10" rx="1" fill="#2D2D2D"/>
+        <!-- middle bar -->
+        <rect x="5" y="20" width="32" height="10" rx="1" fill="#2D2D2D"/>
+        <!-- bottom bar -->
+        <rect x="5" y="35" width="40" height="10" rx="1" fill="#2D2D2D"/>
+        <!-- left spine -->
+        <rect x="5" y="5"  width="10" height="40" rx="1" fill="#2D2D2D"/>
+      </svg>
+      <div class="burst" id="burst"></div>
+    </div>
+  </div>
+  <div class="hint-arrow" id="hintArrow"></div>
+
+  <!-- Direction buttons -->
+  <div class="buttons-wrap">
+    <button class="dir-btn" data-dir="up"    onclick="answer('up')">👆</button>
+    <button class="dir-btn" data-dir="down"  onclick="answer('down')">👇</button>
+    <button class="dir-btn" data-dir="left"  onclick="answer('left')">👈</button>
+    <button class="dir-btn" data-dir="right" onclick="answer('right')">👉</button>
+    <div class="btn-center"></div>
+  </div>
+
+</div>
+
+<!-- Hint button -->
+<button class="hint-btn" onclick="showHint()">💡 提示</button>
+
+<script>
+// ── State ──────────────────────────────────────────────────
+const TOTAL = 10;
+let currentDir = 'right';
+let score = 0;
+let round = 0;
+let locked = false;
+let hintVisible = false;
+
+const dirs = ['up', 'down', 'left', 'right'];
+const dirArrow = { up: '⬆️', down: '⬇️', left: '⬅️', right: '➡️' };
+const dirLabel = { up: '朝上', down: '朝下', left: '朝左', right: '朝右' };
+// SVG E opens to the right at 0°.
+// rotate(-90deg) → opens UP, rotate(90deg) → opens DOWN, rotate(180deg) → opens LEFT
+const dirRotate = { right: 0, up: -90, left: 180, down: 90 };
+
+const emojiBunny = ['🐰', '🐣', '🐸', '🐼', '🦊', '🐨', '🐮', '🐯'];
+const celebEmojis = ['🎉', '🌟', '🏆', '🥳', '🎊'];
+const correctPhrases = ['太棒了！', '真聪明！', '答对了！', '好厉害！', '完美！', '耶！'];
+const wrongPhrases = ['再试一次！', '加油加油！', '差一点点！'];
+
+// ── Init stars ─────────────────────────────────────────────
+(function() {
+  const s = document.getElementById('stars');
+  for (let i = 0; i < 18; i++) {
+    const el = document.createElement('div');
+    el.className = 'star';
+    const size = Math.random() * 8 + 4;
+    el.style.cssText = `
+      width:${size}px; height:${size}px;
+      top:${Math.random()*100}%;
+      left:${Math.random()*100}%;
+      animation-delay:${Math.random()*4}s;
+      animation-duration:${2+Math.random()*3}s;
+    `;
+    s.appendChild(el);
+  }
+})();
+
+// ── Progress dots ─────────────────────────────────────────
+function renderProgress() {
+  const p = document.getElementById('progress');
+  p.innerHTML = '';
+  for (let i = 0; i < TOTAL; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i < round ? ' done' : i === round ? ' current' : '');
+    p.appendChild(d);
+  }
+}
+
+// ── Audio ────────────────────────────────────────────────
+let audioCtx;
+function getCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function beep(freq, dur, type='sine', vol=0.3) {
+  try {
+    const ctx = getCtx();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    o.start(); o.stop(ctx.currentTime + dur);
+  } catch(e) {}
+}
+function playCorrect() {
+  beep(523, 0.12); setTimeout(()=>beep(659,0.12), 100); setTimeout(()=>beep(784,0.2), 200);
+}
+function playWrong() {
+  beep(300, 0.15, 'sawtooth', 0.2); setTimeout(()=>beep(250,0.2,'sawtooth',0.15), 150);
+}
+function playCheer() {
+  [523,587,659,698,784].forEach((f,i) => setTimeout(()=>beep(f,0.15),i*80));
+}
+
+// ── New question ──────────────────────────────────────────
+function newQuestion() {
+  locked = false; hintVisible = false;
+  currentDir = dirs[Math.floor(Math.random() * dirs.length)];
+  const rot = dirRotate[currentDir];
+
+  const eEl = document.getElementById('eLetter');
+  const hint = document.getElementById('hintArrow');
+  const bubble = document.getElementById('bubble');
+
+  eEl.style.transform = `rotate(${rot}deg)`;
+  hint.classList.remove('show');
+  hint.textContent = '';
+  bubble.classList.remove('show');
+
+  // Reset buttons
+  document.querySelectorAll('.dir-btn').forEach(b => b.classList.remove('correct','wrong'));
+
+  // Change bunny emoji occasionally
+  if (round % 3 === 0) {
+    document.getElementById('bunny').textContent = emojiBunny[Math.floor(Math.random()*emojiBunny.length)];
+  }
+
+  renderProgress();
+
+  // Show bubble with prompt
+  setTimeout(() => {
+    bubble.textContent = '开口朝哪边？👀';
+    bubble.classList.add('show');
+    setTimeout(() => bubble.classList.remove('show'), 1800);
+  }, 300);
+}
+
+// ── Show hint ─────────────────────────────────────────────
+function showHint() {
+  if (locked) return;
+  const hint = document.getElementById('hintArrow');
+  hint.textContent = dirArrow[currentDir];
+  hint.classList.add('show');
+  hintVisible = true;
+
+  const bubble = document.getElementById('bubble');
+  bubble.textContent = `E 的开口${dirLabel[currentDir]}`;
+  bubble.classList.add('show');
+  setTimeout(() => bubble.classList.remove('show'), 2000);
+}
+
+// ── Answer ────────────────────────────────────────────────
+function answer(dir) {
+  if (locked) return;
+  locked = true;
+
+  const btn = document.querySelector(`.dir-btn[data-dir="${dir}"]`);
+  const burst = document.getElementById('burst');
+  const bubble = document.getElementById('bubble');
+  const starEl = document.getElementById('starDisplay');
+
+  if (dir === currentDir) {
+    // CORRECT
+    btn.classList.add('correct');
+    burst.classList.remove('active');
+    void burst.offsetWidth;
+    burst.classList.add('active');
+    playCorrect();
+    score++;
+    round++;
+
+    const phrase = correctPhrases[Math.floor(Math.random()*correctPhrases.length)];
+    bubble.textContent = phrase + ' ' + dirArrow[currentDir];
+    bubble.classList.add('show');
+
+    document.getElementById('scoreNum').textContent = score;
+    starEl.classList.remove('pop');
+    void starEl.offsetWidth;
+    starEl.classList.add('pop');
+
+    renderProgress();
+
+    if (round >= TOTAL) {
+      setTimeout(showCelebration, 700);
+    } else {
+      setTimeout(() => {
+        bubble.classList.remove('show');
+        newQuestion();
+      }, 900);
+    }
+  } else {
+    // WRONG
+    btn.classList.add('wrong');
+    playWrong();
+    const phrase = wrongPhrases[Math.floor(Math.random()*wrongPhrases.length)];
+    bubble.textContent = phrase + ' 再看看～';
+    bubble.classList.add('show');
+
+    setTimeout(() => {
+      btn.classList.remove('wrong');
+      bubble.classList.remove('show');
+      locked = false;
+    }, 800);
+  }
+}
+
+// ── Celebration ────────────────────────────────────────────
+function showCelebration() {
+  playCheer();
+  fireConfetti();
+  const cel = document.getElementById('celebrate');
+  document.getElementById('celebEmoji').textContent = celebEmojis[Math.floor(Math.random()*celebEmojis.length)];
+  document.getElementById('celebText').textContent = '🌟 全部答对啦！';
+  document.getElementById('celebSub').textContent = `共得了 ${score} 颗星星！⭐`;
+  cel.classList.add('show');
+}
+
+function fireConfetti() {
+  const colors = ['#FFD93D','#FF6B6B','#6BCB77','#4D96FF','#C77DFF','#FF9A3C'];
+  for (let i = 0; i < 60; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      el.style.cssText = `
+        left:${Math.random()*100}vw;
+        top:-10px;
+        background:${colors[Math.floor(Math.random()*colors.length)]};
+        width:${6+Math.random()*8}px;
+        height:${6+Math.random()*8}px;
+        border-radius:${Math.random()>0.5?'50%':'2px'};
+        animation-duration:${1.5+Math.random()*2}s;
+        animation-delay:${Math.random()*0.5}s;
+      `;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 3000);
+    }, i * 30);
+  }
+}
+
+// ── Reset ─────────────────────────────────────────────────
+function resetGame() {
+  score = 0; round = 0;
+  document.getElementById('scoreNum').textContent = 0;
+  document.getElementById('celebrate').classList.remove('show');
+  newQuestion();
+}
+
+// ── Start ─────────────────────────────────────────────────
+newQuestion();
+</script>
+</body>
+</html>
