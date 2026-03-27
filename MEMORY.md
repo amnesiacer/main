@@ -1,27 +1,5 @@
 # 长期记忆
 
-## 看板模板化架构
-
-**页面地址**: https://amnesiacer.github.io/main/skills/poverty-alleviation-mgmt/dashboard.html
-**文件位置**: `skills/poverty-alleviation-mgmt/`
-
-**更新流程**: 编辑 `dashboard_data.json` → 运行 `python3 generate_html.py` → `git push amnesiacer main`
-
-| 文件 | 作用 |
-|------|------|
-| `dashboard_data.json` | 数据源（编辑这个） |
-| `generate_html.py` | JSON → HTML 生成器 |
-| `extract_data.py` | HTML → JSON 反向提取（备用） |
-| `dashboard.html` | 自动生成，勿手动编辑 |
-
-**规则**: 看板页面永远不要手动编辑，只通过 generate_html.py 从 JSON 生成。
-
-## 马店镇光伏电站
-
-- 7个村有光伏电站：关庙村、张村村、上窑村、小街村、太平庄村、田村村、东仇村
-- 2025年光伏收益均已拨付到村
-- 分配状态：小街村已分配到户；其余6个村（关庙村、张村村、上窑村、太平庄村、田村村、东仇村）尚未分配
-
 ## 监测对象数据库查询方法
 
 ### 数据库连接
