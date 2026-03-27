@@ -2,6 +2,7 @@
 
 ## 看板模板化架构
 
+**页面地址**: https://amnesiacer.github.io/main/dashboard.html
 **文件位置**: `skills/poverty-alleviation-mgmt/`
 
 **更新流程**: 编辑 `dashboard_data.json` → 运行 `python3 generate_html.py` → `git push amnesiacer main`
