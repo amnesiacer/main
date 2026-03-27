@@ -1,0 +1,306 @@
+#!/usr/bin/env python3
+"""
+从 dashboard_data.json 生成 dashboard.html
+用法: python3 generate_html.py
+
+数据更新流程:
+  1. 编辑 dashboard_data.json（更新项目/收益/拖欠/分配数据）
+  2. 运行 python3 generate_html.py
+  3. 提交推送: git add -A && git commit -m "数据更新" && git push amnesiacer main
+"""
+import json, os, html as html_mod
+
+BASE = os.path.dirname(os.path.abspath(__file__))
+DATA_PATH = os.path.join(BASE, 'dashboard_data.json')
+HTML_PATH = os.path.join(BASE, 'dashboard.html')
+
+with open(DATA_PATH, 'r', encoding='utf-8') as f:
+    data = json.load(f)
+
+s = data.get("summary", {})
+income_headers = ["项目名称", "收益周期", "实缴时间", "实缴金额(元)", "实缴状态"]
+arrears_headers = ["项目名称", "收益周期", "合作方", "合同周期", "应缴(万元)", "实缴(万元)", "已分配(万元)", "拖欠(万元)"]
+dist_headers = ["项目名称", "收益周期", "姓名", "身份证", "分配金额(元)", "银行卡号", "分配日期", "备注"]
+
+# ── Build table body HTML ──
+def render_rows(rows, has_arrear_class=False):
+    out = []
+    for r in rows:
+        cls = r.get("class", "")
+        attrs = f' class="{cls}"' if cls else ""
+        if r.get("group"):
+            attrs += f' data-group="{r["group"]}"'
+        if r.get("parent"):
+            attrs += f' data-parent="{r["parent"]}"'
+        if r.get("project"):
+            attrs += f' data-project="{r["project"]}"'
+        cells_html = ""
+        cell_classes = r.get("cell_classes", [])
+        ci = 0
+        for i, c in enumerate(r["cells"]):
+            ccls = ""
+            if has_arrear_class and ci < len(cell_classes) and cell_classes[ci]:
+                ccls = f' class="{cell_classes[ci]}"'
+            ci += 1
+            cells_html += f"<td{ccls}>{html_mod.escape(c)}</td>"
+        out.append(f"        <tr{attrs}>{cells_html}</tr>")
+    return "\n".join(out)
+
+# ── Build project cards HTML ──
+def render_project_cards(rows):
+    """Render 项目总览 as cards from table rows"""
+    # Group rows by group attribute
+    cards = []
+    i = 0
+    while i < len(rows):
+        r = rows[i]
+        cls = r.get("class", "")
+        if "proj-main-row" in cls:
+            group_id = r.get("group", "")
+            cells = r["cells"]
+            # Collect sub rows
+            sub_rows = []
+            i += 1
+            while i < len(rows) and rows[i].get("parent") == group_id:
+                sub_rows.append(rows[i])
+                i += 1
+            cards.append({"main": r, "subs": sub_rows, "group": group_id})
+        elif "note-row" in cls:
+            # Note/summary row (like 项目汇总)
+            cards.append({"note": r})
+            i += 1
+        else:
+            i += 1
+    return cards
+
+def render_projects_panel(cards_html):
+    return cards_html
+
+# ── Build filter options ──
+def render_options(filters, key):
+    opts = filters.get(key, [])
+    out = []
+    for o in opts:
+        sel = ' selected' if o["value"] == "" else ""
+        out.append(f'<option value="{html_mod.escape(o["value"])}"{sel}>{html_mod.escape(o["label"])}</option>')
+    return "\n".join(out)
+
+income_rows_html = render_rows(data["income"], has_arrear_class=True)
+arrears_rows_html = render_rows(data["arrears"])
+dist_rows_html = render_rows(data["distribution"])
+
+income_options = render_options(data.get("filters", {}), "filter-income")
+arrears_options = render_options(data.get("filters", {}), "filter-arrears")
+dist_options = render_options(data.get("filters", {}), "filter-dist")
+
+# ── Read existing project cards from current HTML (preserve them) ──
+import re
+with open(HTML_PATH, 'r', encoding='utf-8') as f:
+    existing_html = f.read()
+
+# Extract CSS
+css_match = re.search(r'<style>(.*?)</style>', existing_html, re.DOTALL)
+css = css_match.group(1) if css_match else data.get("css", "")
+
+# Extract Google Fonts link
+fonts_match = re.search(r'(<link[^>]*fonts\.googleapis\.com[^>]*>)', existing_html)
+fonts_link = fonts_match.group(1) if fonts_match else ""
+
+# Extract project cards HTML (between tbody-projects start and end)
+proj_match = re.search(r'id="tbody-projects">(.*?)</tbody>', existing_html, re.DOTALL)
+proj_cards_html = proj_match.group(1) if proj_match else ""
+
+# Extract solar section if exists
+solar_match = re.search(r'(<div id="panel-solar".*?</div>\s*</div>)', existing_html, re.DOTALL)
+solar_html = ""
+# Solar section was removed
+
+# ── Generate HTML ──
+html_out = f'''<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>马店镇帮扶项目收益管理看板</title>
+{fonts_link}
+<style>
+{css}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="header">
+    <h1>马店镇帮扶项目收益管理看板</h1>
+    <p class="subtitle">洛阳市洛宁县马店镇 · 数据更新日期: 2026-03-27</p>
+  </div>
+
+  <!-- 汇总卡片 -->
+  <div class="stats-row">
+    <div class="stat">
+      <div class="num">{s.get("项目总数", "")}</div>
+      <div class="lbl">项目总数</div>
+    </div>
+    <div class="stat">
+      <div class="num">{s.get("累计实缴", "")}</div>
+      <div class="lbl">累计实缴（万元）</div>
+    </div>
+    <div class="stat">
+      <div class="num">{s.get("当前拖欠", "")}</div>
+      <div class="lbl">当前拖欠（万元）</div>
+    </div>
+    <div class="stat">
+      <div class="num">{s.get("拖欠项目数", "")}</div>
+      <div class="lbl">拖欠项目数</div>
+    </div>
+  </div>
+
+  <!-- 标签页 -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('projects',this)">📋 项目总览</div>
+    <div class="tab" onclick="switchTab('arrears',this)">⚠️ 拖欠明细</div>
+    <div class="tab" onclick="switchTab('distribution',this)">📤 分配明细</div>
+  </div>
+
+  <!-- 项目总览 -->
+  <div id="panel-projects" class="panel active">
+    <div class="proj-grid">
+{proj_cards_html}
+    </div>
+  </div>
+
+  <!-- 收益台账（通过项目总览的项目名称点击进入） -->
+  <div id="panel-income" class="panel">
+    <div class="filter-bar">
+      <button class="back-btn" onclick="backToProjects()">← 返回项目总览</button>
+      <label>筛选项目：</label>
+      <select id="filter-income" onchange="filterRows('tbody-income','filter-income')">
+{income_options}
+      </select>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          {''.join(f'<th>{h}</th>' for h in income_headers)}
+        </tr></thead>
+        <tbody id="tbody-income">
+{income_rows_html}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 拖欠明细 -->
+  <div id="panel-arrears" class="panel">
+    <div class="filter-bar">
+      <label>筛选项目：</label>
+      <select id="filter-arrears" onchange="filterRows('tbody-arrears','filter-arrears')">
+{arrears_options}
+      </select>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          {''.join(f'<th>{h}</th>' for h in arrears_headers)}
+        </tr></thead>
+        <tbody id="tbody-arrears">
+{arrears_rows_html}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 分配明细 -->
+  <div id="panel-distribution" class="panel">
+    <div class="filter-bar">
+      <label>筛选项目：</label>
+      <select id="filter-dist" onchange="filterRows('tbody-dist','filter-dist')">
+{dist_options}
+      </select>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          {''.join(f'<th>{h}</th>' for h in dist_headers)}
+        </tr></thead>
+        <tbody id="tbody-dist">
+{dist_rows_html}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function switchTab(name, el) {{
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+}}
+
+function filterRows(tbodyId, selectId) {{
+  const val = document.getElementById(selectId).value;
+  const names = val ? val.split('|') : [];
+  document.querySelectorAll('#' + tbodyId + ' tr[data-project]').forEach(tr => {{
+    if (!val || names.includes(tr.dataset.project)) {{
+      tr.style.display = '';
+    }} else {{
+      tr.style.display = 'none';
+    }}
+  }});
+}}
+
+function toggleGroup(btn) {{
+  const row = btn.closest('tr');
+  const groupId = row.dataset.group;
+  const subRows = document.querySelectorAll('tr[data-parent="' + groupId + '"]');
+  const isOpen = btn.textContent.startsWith('▼');
+  subRows.forEach(r => r.classList.toggle('hidden', isOpen));
+  btn.textContent = isOpen ? '▶ 展开明细' : '▼ 收起明细';
+}}
+
+function viewProjectIncome(projectName) {{
+  const sel = document.getElementById('filter-income');
+  if (sel) {{
+    let found = false;
+    for (let i = 0; i < sel.options.length; i++) {{
+      if (sel.options[i].value === projectName) {{
+        sel.value = projectName;
+        found = true;
+        break;
+      }}
+    }}
+    if (!found) {{
+      for (let i = 0; i < sel.options.length; i++) {{
+        if (sel.options[i].value && projectName.includes(sel.options[i].value)) {{
+          sel.value = sel.options[i].value;
+          break;
+        }}
+      }}
+    }}
+    filterRows('tbody-income', 'filter-income');
+  }}
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-income').classList.add('active');
+}}
+
+function backToProjects() {{
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelector('.tab').classList.add('active');
+  document.getElementById('panel-projects').classList.add('active');
+}}
+</script>
+</body>
+</html>'''
+
+with open(HTML_PATH, 'w', encoding='utf-8') as f:
+    f.write(html_out)
+
+print(f"✅ dashboard.html 已生成 ({len(html_out)} 字符)")
+print(f"   收益台账: {len(data['income'])} 行")
+print(f"   拖欠明细: {len(data['arrears'])} 行")
+print(f"   分配明细: {len(data['distribution'])} 行")
