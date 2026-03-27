@@ -185,7 +185,7 @@ python3 pam.py build_dashboard
 
 ## 看板数据更新流程（模板化架构）
 
-**页面地址**: https://amnesiacer.github.io/main/dashboard.html
+**页面地址**: https://amnesiacer.github.io/main/skills/poverty-alleviation-mgmt/dashboard.html
 
 看板采用 **数据(JSON) + 模板(HTML生成器)** 分离架构，更新数据不需要手写 HTML。
 
