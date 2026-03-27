@@ -180,3 +180,64 @@ python3 pam.py build_dashboard
 - **合并显示**：看板中仅村名不同的同类项目会合并为一行，点击"展开明细"查看各村
 - **身份证脱敏**：查询和看板中均自动脱敏（前4后4，中间10位为`**********`）
 - **amount 单位**：CLI 参数统一传万元；分配名单中的 amount 传元
+
+---
+
+## 看板数据更新流程（模板化架构）
+
+看板采用 **数据(JSON) + 模板(HTML生成器)** 分离架构，更新数据不需要手写 HTML。
+
+### 文件说明
+
+| 文件 | 用途 |
+|------|------|
+| `dashboard_data.json` | **数据源**（需要编辑的文件） |
+| `generate_html.py` | 从 JSON 生成 HTML 的脚本 |
+| `extract_data.py` | 从现有 HTML 反向提取数据到 JSON（备用） |
+| `dashboard.html` | 自动生成，**不要手动编辑** |
+
+### 更新数据三步走
+
+```bash
+# 1. 编辑数据文件
+vim ~/.openclaw/workspace/skills/poverty-alleviation-mgmt/dashboard_data.json
+
+# 2. 生成 HTML
+cd ~/.openclaw/workspace/skills/poverty-alleviation-mgmt && python3 generate_html.py
+
+# 3. 推送部署
+cd ~/.openclaw/workspace && git add -A && git commit -m "数据更新" && git push amnesiacer main
+```
+
+### JSON 数据结构
+
+```json
+{
+  "summary": {
+    "项目总数": "9",
+    "累计实缴": "952.26",
+    "当前拖欠": "46.00",
+    "拖欠项目数": "18"
+  },
+  "income": [
+    {"cells": ["项目名", "周期", "日期", "金额", "状态"], "class": "group-header", "group": "g1"},
+    {"cells": ["子项目名", "周期", "日期", "金额", "状态"], "class": "proj-sub-row", "parent": "g1", "project": "子项目名"}
+  ],
+  "arrears": [...],
+  "distribution": [...],
+  "filters": {
+    "filter-income": [{"value": "光伏电站项目", "label": "光伏电站项目"}]
+  }
+}
+```
+
+### 行数据属性说明
+
+| 属性 | 含义 |
+|------|------|
+| `class: "group-header"` | 合并组的汇总行（可点击展开） |
+| `class: "proj-sub-row"` | 展开后的子行（各村明细） |
+| `class: "proj-main-row"` | 项目总览中的主行 |
+| `group: "g1"` | 分组 ID，汇总行和子行通过此关联 |
+| `parent: "g1"` | 子行指向所属分组 |
+| `project: "xxx"` | 用于筛选的项目名 |
