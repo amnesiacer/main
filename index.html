@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>帮扶项目收益管理</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="data.js"></script>
+<style>
+/* ────────────────────────────── 变量 & 重置 ─────────────────────────────── */
+:root {
+  --bg:        #f5f4f0;
+  --surface:   #ffffff;
+  --surface2:  #f0ede8;
+  --border:    #dedad4;
+  --border2:   #e8e4de;
+  --ink:       #1c1e2a;
+  --ink2:      #4a4c5a;
+  --ink3:      #9a9caa;
+  --red:       #c0392b;
+  --red-bg:    #fdf0ef;
+  --red-bd:    #f5cac7;
+  --green:     #1a7c4e;
+  --green-bg:  #edf7f2;
+  --green-bd:  #b8e2cd;
+  --blue:      #1e4fa0;
+  --blue-bg:   #edf2fb;
+  --amber:     #b45309;
+  --amber-bg:  #fef9ee;
+  --amber-bd:  #fde68a;
+  --tag-ok-bg: #dcf5e8; --tag-ok-c: #166534;
+  --tag-no-bg: #fee2e2; --tag-no-c: #991b1b;
+  --sidebar-w: 240px;
+  --font:      'Noto Sans SC', sans-serif;
+  --mono:      'JetBrains Mono', monospace;
+  --r:         8px;
+  --r2:        12px;
+  --shadow:    0 1px 4px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.05);
+  --shadow2:   0 2px 8px rgba(0,0,0,.10);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: var(--font); background: var(--bg); color: var(--ink); font-size: 15px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+
+/* ────────────────────────────── 布局 ───────────────────────────────────── */
+.layout    { display: flex; height: 100vh; overflow: hidden; }
+.sidebar   { width: var(--sidebar-w); background: var(--ink); display: flex; flex-direction: column; flex-shrink: 0; }
+.main      { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+
+/* ────────────────────────────── Sidebar ────────────────────────────────── */
+.sb-head   { padding: 28px 24px 22px; border-bottom: 1px solid rgba(255,255,255,.08); }
+.sb-brand  { display: flex; align-items: center; gap: 10px; }
+.sb-dot    { width: 10px; height: 10px; border-radius: 50%; background: var(--red); flex-shrink: 0; box-shadow: 0 0 10px var(--red); }
+.sb-name   { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: .04em; }
+.sb-sub    { font-size: 11px; color: rgba(255,255,255,.3); font-family: var(--mono); margin-top: 6px; padding-left: 20px; }
+.sb-section{ font-size: 10px; font-weight: 600; letter-spacing: .12em; color: rgba(255,255,255,.3); text-transform: uppercase; padding: 22px 24px 8px; }
+.nav-item  { display: flex; align-items: center; gap: 12px; padding: 11px 24px; cursor: pointer; color: rgba(255,255,255,.5); font-size: 14px; font-weight: 500; transition: all .18s; border-left: 2.5px solid transparent; }
+.nav-item:hover { color: rgba(255,255,255,.88); background: rgba(255,255,255,.06); }
+.nav-item.active { color: #fff; background: rgba(255,255,255,.1); border-left-color: var(--red); }
+.nav-icon  { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
+.sb-foot   { margin-top: auto; padding: 18px 24px; border-top: 1px solid rgba(255,255,255,.07); }
+.sb-time   { font-size: 11px; color: rgba(255,255,255,.3); font-family: var(--mono); line-height: 2; }
+
+/* ────────────────────────────── Top bar ────────────────────────────────── */
+.topbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; background: var(--surface); border-bottom: 1px solid var(--border); gap: 12px; flex-shrink: 0; }
+.topbar-title { font-size: 20px; font-weight: 700; color: var(--ink); }
+.topbar-right { display: flex; gap: 10px; align-items: center; }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: var(--r); border: 1.5px solid var(--border); background: var(--surface); color: var(--ink2); font-size: 13px; font-family: var(--font); font-weight: 500; cursor: pointer; transition: all .15s; white-space: nowrap; }
+.btn:hover { border-color: var(--ink); background: var(--surface2); color: var(--ink); }
+.btn-red { background: var(--red); border-color: var(--red); color: #fff; }
+.btn-red:hover { opacity: .88; border-color: var(--red); color: #fff; }
+
+/* ────────────────────────────── Content ────────────────────────────────── */
+.content { flex: 1; overflow: auto; padding: 28px 32px 40px; }
+.panel { display: none; animation: fadeIn .18s ease; }
+.panel.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* ────────────────────────────── KPI cards ──────────────────────────────── */
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
+.kpi { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--r2); padding: 22px 24px; box-shadow: var(--shadow); position: relative; }
+.kpi::after { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: var(--r2) var(--r2) 0 0; background: var(--border); }
+.kpi.red::after   { background: var(--red); }
+.kpi.green::after { background: var(--green); }
+.kpi.blue::after  { background: var(--blue); }
+.kpi.amber::after { background: var(--amber); }
+.kpi-label { font-size: 12px; font-weight: 600; color: var(--ink3); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 10px; }
+.kpi-value { font-size: 30px; font-weight: 700; font-family: var(--mono); line-height: 1; color: var(--ink); }
+.kpi.red   .kpi-value { color: var(--red); }
+.kpi.green .kpi-value { color: var(--green); }
+.kpi.blue  .kpi-value { color: var(--blue); }
+.kpi.amber .kpi-value { color: var(--amber); }
+.kpi-unit { font-size: 12px; color: var(--ink3); margin-top: 6px; }
+
+/* ────────────────────────────── Toolbar ────────────────────────────────── */
+.toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+.filter-select { padding: 8px 14px; background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--r); color: var(--ink); font-size: 14px; font-family: var(--font); cursor: pointer; min-width: 180px; transition: border-color .15s; }
+.filter-select:hover, .filter-select:focus { border-color: var(--ink2); outline: none; }
+.toolbar-right { margin-left: auto; display: flex; gap: 8px; }
+
+/* ────────────────────────────── Table ──────────────────────────────────── */
+.tbl-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--r2); box-shadow: var(--shadow); overflow: hidden; }
+.tbl-wrap { overflow-x: auto; max-height: calc(100vh - 300px); }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+thead { position: sticky; top: 0; z-index: 10; }
+thead th { padding: 12px 16px; background: var(--surface2); border-bottom: 2px solid var(--border); font-size: 12px; font-weight: 700; color: var(--ink2); letter-spacing: .07em; text-transform: uppercase; white-space: nowrap; text-align: left; }
+tbody tr { border-bottom: 1px solid var(--border2); transition: background .1s; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr.r-main:hover { background: #faf9f6; }
+tbody tr.r-sub { background: var(--surface2); }
+tbody tr.r-sub:hover { background: #eceae4; }
+tbody td { padding: 12px 16px; vertical-align: middle; }
+
+/* 单元格类型 */
+.td-num    { font-family: var(--mono); font-size: 13.5px; text-align: right; white-space: nowrap; }
+.td-sm     { font-family: var(--mono); font-size: 12px; color: var(--ink2); }
+.td-period { font-family: var(--mono); font-size: 12px; color: var(--ink2); }
+.td-range  { font-family: var(--mono); font-size: 12px; white-space: nowrap; color: var(--ink2); }
+.td-range em { color: var(--ink3); font-style: normal; margin: 0 4px; }
+.td-name   { font-size: 14px; font-weight: 600; }
+.td-sub    { padding-left: 36px !important; font-weight: 400; font-size: 13px; color: var(--ink2); }
+.td-pos    { color: var(--green); }
+.td-neg    { color: var(--red); font-weight: 700; }
+.td-summary{ font-size: 13px; color: var(--ink2); }
+
+/* 项目名链接 */
+.proj-link { color: var(--blue); cursor: pointer; text-decoration: none; border-bottom: 1px dashed var(--blue); transition: opacity .15s; }
+.proj-link:hover { opacity: .7; }
+
+/* 展开按钮 */
+.exp-btn { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 4px; background: var(--surface2); border: 1.5px solid var(--border); color: var(--ink3); font-size: 9px; cursor: pointer; margin-right: 8px; transition: all .15s; user-select: none; flex-shrink: 0; vertical-align: middle; }
+.exp-btn:hover { border-color: var(--red); color: var(--red); }
+.exp-btn.open  { background: var(--red); border-color: var(--red); color: #fff; }
+.r-hidden { display: none; }
+
+/* 标签 */
+.tag { display: inline-block; padding: 3px 9px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+.tag-ok { background: var(--tag-ok-bg); color: var(--tag-ok-c); }
+.tag-no { background: var(--tag-no-bg); color: var(--tag-no-c); }
+
+/* 空态 */
+.empty-state { text-align: center; padding: 60px 20px; color: var(--ink3); font-size: 15px; }
+.empty-icon  { font-size: 36px; margin-bottom: 12px; }
+
+/* ────────────────────────────── 收益台账面包屑 ──────────────────────────── */
+.breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--ink3); margin-bottom: 20px; }
+.breadcrumb a { color: var(--blue); cursor: pointer; text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+.breadcrumb .sep { color: var(--border); }
+.breadcrumb .cur { color: var(--ink); font-weight: 600; }
+
+/* ────────────────────────────── 移动端 ─────────────────────────────────── */
+@media (max-width: 768px) {
+  .sidebar { position: fixed; left: -100%; top: 0; bottom: 0; z-index: 100; transition: left .25s; }
+  .sidebar.open { left: 0; }
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 99; }
+  .overlay.show { display: block; }
+  .topbar { padding: 12px 16px; }
+  .topbar-title { font-size: 17px; }
+  .content { padding: 16px; }
+  .kpi-grid { grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 18px; }
+  .kpi-value { font-size: 22px; }
+  .kpi { padding: 16px 18px; }
+  .tbl-wrap { max-height: calc(100vh - 220px); }
+  .menu-btn { display: flex !important; }
+  .filter-select { min-width: 140px; }
+  thead th, tbody td { padding: 9px 10px; font-size: 13px; }
+}
+.menu-btn { display: none; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: var(--r); border: 1.5px solid var(--border); background: var(--surface2); color: var(--ink); cursor: pointer; font-size: 18px; }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- ── 侧边栏 ── -->
+<div class="sidebar" id="sidebar">
+  <div class="sb-head">
+    <div class="sb-brand"><div class="sb-dot"></div><div class="sb-name">帮扶收益管理</div></div>
+    <div class="sb-sub">PAM DASHBOARD</div>
+  </div>
+  <div class="sb-section">数据看板</div>
+  <div class="nav-item active" onclick="showPanel('overview',this)" id="nav-overview">
+    <span class="nav-icon">▦</span>项目总览
+  </div>
+  <div class="nav-item" onclick="showPanel('arrears',this)" id="nav-arrears">
+    <span class="nav-icon">△</span>拖欠明细
+  </div>
+  <div class="nav-item" onclick="showPanel('dist',this)" id="nav-dist">
+    <span class="nav-icon">◇</span>分配明细
+  </div>
+  <div class="sb-foot">
+    <div class="sb-time">
+      数据时间<br>
+      <span id="sb-gentime" style="color:rgba(255,255,255,.55)">—</span><br>
+      <span style="color:rgba(255,255,255,.2)">未到期收益不计入</span>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- ── 主区域 ── -->
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span class="menu-btn" onclick="toggleSidebar()">☰</span>
+      <span class="topbar-title" id="topbar-title">项目总览</span>
+    </div>
+    <div class="topbar-right">
+      <button class="btn" onclick="exportAll()">↓ 导出全部</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ═══════════════════════ 项目总览 ═══════════════════════ -->
+    <div class="panel active" id="panel-overview">
+      <div class="kpi-grid" id="kpi-overview"></div>
+      <div class="toolbar">
+        <span id="proj-count-label" style="font-size:13px;color:var(--ink3)"></span>
+        <div class="toolbar-right">
+          <button class="btn" onclick="exportExcel('projects')">↓ 导出 Excel</button>
+        </div>
+      </div>
+      <div class="tbl-card">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th>项目名称</th>
+              <th>所属村</th>
+              <th>运营主体</th>
+              <th>合同期限</th>
+              <th>约定年收益（万）</th>
+              <th>应缴合计（万）</th>
+              <th>实缴合计（万）</th>
+              <th>拖欠合计（万）</th>
+            </tr></thead>
+            <tbody id="tbody-projects"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════ 收益台账（无标签页，由项目名跳转）═══════════════════════ -->
+    <div class="panel" id="panel-income">
+      <div class="breadcrumb">
+        <a onclick="showPanel('overview',document.getElementById('nav-overview'))">项目总览</a>
+        <span class="sep">›</span>
+        <span class="cur" id="income-proj-name">—</span>
+        <span class="sep">›</span>
+        <span>收益台账</span>
+      </div>
+      <div class="kpi-grid" id="kpi-income"></div>
+      <div class="toolbar">
+        <div class="toolbar-right">
+          <button class="btn" onclick="exportExcel('income')">↓ 导出 Excel</button>
+        </div>
+      </div>
+      <div class="tbl-card">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th>收益周期</th>
+              <th>应缴（万）</th>
+              <th>实缴（万）</th>
+              <th>拖欠（万）</th>
+              <th>分配状态</th>
+              <th>分配日期</th>
+              <th>到户金额（万）</th>
+            </tr></thead>
+            <tbody id="tbody-income"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════ 拖欠明细 ═══════════════════════ -->
+    <div class="panel" id="panel-arrears">
+      <div class="kpi-grid" id="kpi-arrears"></div>
+      <div class="toolbar">
+        <select class="filter-select" id="f-arrears" onchange="filterArrears()">
+          <option value="">全部项目</option>
+        </select>
+        <div class="toolbar-right">
+          <button class="btn" onclick="exportExcel('arrears')">↓ 导出 Excel</button>
+        </div>
+      </div>
+      <div class="tbl-card">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th>项目名称</th>
+              <th>收益周期</th>
+              <th>应缴（万）</th>
+              <th>实缴（万）</th>
+              <th>拖欠（万）</th>
+            </tr></thead>
+            <tbody id="tbody-arrears"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════ 分配明细 ═══════════════════════ -->
+    <div class="panel" id="panel-dist">
+      <div class="toolbar">
+        <select class="filter-select" id="f-dist" onchange="filterDist()">
+          <option value="">全部项目</option>
+        </select>
+        <div class="toolbar-right">
+          <button class="btn" onclick="exportExcel('dist')">↓ 导出 Excel</button>
+        </div>
+      </div>
+      <div class="tbl-card">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th>项目名称</th>
+              <th>收益周期</th>
+              <th>姓名</th>
+              <th>分配金额（元）</th>
+              <th>分配日期</th>
+              <th>身份证</th>
+              <th>银行卡号</th>
+              <th>备注</th>
+            </tr></thead>
+            <tbody id="tbody-dist"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /layout -->
+
+<script>
+/* ──────────────────────── 工具函数 ─────────────────────────── */
+const fmt  = v => (parseFloat(v)||0).toFixed(4);
+const fmtN = v => (parseFloat(v)||0).toFixed(2);
+const esc  = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const $ = id => document.getElementById(id);
+
+/* ──────────────────────── 项目合并 ─────────────────────────── */
+function groupKey(name) {
+  // 去掉最前面的"X村"前缀作为合并键
+  const m = name.match(/^[\u4e00-\u9fa5]{1,4}村(.+)/);
+  return m ? m[1].trim() : name;
+}
+
+function buildGroups(items, nameField) {
+  const map = new Map();
+  for (const item of items) {
+    const k = groupKey(item[nameField]);
+    if (!map.has(k)) map.set(k, []);
+    map.get(k).push(item);
+  }
+  return map; // Map<gkey, items[]>
+}
+
+/* ──────────────────────── 面板切换 ─────────────────────────── */
+const TITLES = { overview:'项目总览', arrears:'拖欠明细', dist:'分配明细', income:'收益台账' };
+function showPanel(name, navEl) {
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  if (navEl) navEl.classList.add('active');
+  $('panel-'+name).classList.add('active');
+  $('topbar-title').textContent = TITLES[name] || name;
+  closeSidebar();
+}
+
+/* ──────────────────────── 展开/收起 ────────────────────────── */
+function toggleRows(gid, btn) {
+  const open = btn.classList.contains('open');
+  document.querySelectorAll('[data-parent="'+gid+'"]').forEach(r => {
+    r.classList.toggle('r-hidden', open);
+  });
+  btn.classList.toggle('open', !open);
+  btn.textContent = open ? '▶' : '▼';
+}
+
+/* ──────────────────────── KPI 工厂 ─────────────────────────── */
+function makeKpi(label, value, unit, cls) {
+  return `<div class="kpi ${cls||''}"><div class="kpi-label">${label}</div><div class="kpi-value">${value}</div><div class="kpi-unit">${unit}</div></div>`;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   渲染：项目总览
+══════════════════════════════════════════════════════════════ */
+function renderOverview() {
+  const data = PAM_DATA;
+  const groups = buildGroups(data.projects, 'name');
+
+  // KPI
+  let tDue=0, tPaid=0, tArrear=0;
+  for (const p of data.projects) { tDue+=parseFloat(p.total_due||0); tPaid+=parseFloat(p.total_paid||0); tArrear+=parseFloat(p.total_arrear||0); }
+  const arrProjCnt = new Set(data.arrears.map(r=>groupKey(r.project_name))).size;
+  $('kpi-overview').innerHTML =
+    makeKpi('项目总数', groups.size, '个合并项目组', 'blue') +
+    makeKpi('应缴总额', fmt(tDue), '万元（已到期）', 'amber') +
+    makeKpi('实缴总额', fmt(tPaid), '万元', 'green') +
+    makeKpi('当前拖欠', fmt(tArrear), `万元 · ${arrProjCnt} 个项目`, 'red');
+  $('proj-count-label').textContent = `共 ${groups.size} 个项目组，点击项目名称查看收益台账`;
+
+  // 表格
+  let html = '';
+  for (const [gkey, gprojs] of groups) {
+    const merged = gprojs.length > 1;
+    const tD = gprojs.reduce((s,p)=>s+parseFloat(p.total_due||0),0);
+    const tP = gprojs.reduce((s,p)=>s+parseFloat(p.total_paid||0),0);
+    const tA = gprojs.reduce((s,p)=>s+parseFloat(p.total_arrear||0),0);
+    const villages = [...new Set(gprojs.flatMap(p=>p.villages||[]))].join('、');
+    const f = gprojs[0];
+    const gid = 'pg-' + gkey.replace(/\W/g,'_');
+    const arrCls = tA > 0.0001 ? 'td-neg' : 'td-pos';
+    const exp = merged ? `<span class="exp-btn" onclick="toggleRows('${gid}',this)">▶</span>` : '';
+    const agreed = gprojs.reduce((s,p)=>s+parseFloat(p.agreed_income||0),0);
+    // 点击项目名 → 收益台账
+    const nameCell = `<span class="proj-link" onclick="showIncome('${esc(gkey)}')">${esc(gkey)}</span>`;
+    html += `<tr class="r-main"><td class="td-name">${exp}${nameCell}</td><td>${esc(villages)||'—'}</td><td>${esc(f.operator||'—')}</td><td class="td-range">${(f.contract_start||'').slice(0,10)}<em>→</em>${(f.contract_end||'').slice(0,10)}</td><td class="td-num">${fmt(agreed)}</td><td class="td-num">${fmt(tD)}</td><td class="td-num td-pos">${fmt(tP)}</td><td class="td-num ${arrCls}">${fmt(tA)}</td></tr>\n`;
+    if (merged) {
+      for (const sp of gprojs) {
+        const sv = (sp.villages||[]).join('、');
+        const sa = parseFloat(sp.total_arrear||0);
+        const sc = sa > 0.0001 ? 'td-neg' : 'td-pos';
+        html += `<tr class="r-sub r-hidden" data-parent="${gid}"><td class="td-name td-sub">↳ ${esc(sp.name)}</td><td>${esc(sv)||'—'}</td><td>${esc(sp.operator||'—')}</td><td class="td-range">${(sp.contract_start||'').slice(0,10)}<em>→</em>${(sp.contract_end||'').slice(0,10)}</td><td class="td-num">${fmt(sp.agreed_income)}</td><td class="td-num">${fmt(sp.total_due)}</td><td class="td-num td-pos">${fmt(sp.total_paid)}</td><td class="td-num ${sc}">${fmt(sa)}</td></tr>\n`;
+      }
+    }
+  }
+  $('tbody-projects').innerHTML = html || '<tr><td colspan="8" class="empty-state"><div class="empty-icon">📋</div>暂无项目数据</td></tr>';
+}
+
+/* ══════════════════════════════════════════════════════════════
+   渲染：收益台账（点击项目名进入）
+══════════════════════════════════════════════════════════════ */
+let _incomeCurrentGroup = null; // 当前显示的合并组名
+
+function showIncome(gkey) {
+  _incomeCurrentGroup = gkey;
+  // 找到属于该 gkey 的所有原始项目名
+  const groups = buildGroups(PAM_DATA.income_records, 'proj_name');
+  const items = groups.get(gkey) || [];
+
+  $('income-proj-name').textContent = gkey;
+  $('topbar-title').textContent = gkey + ' · 收益台账';
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  $('panel-income').classList.add('active');
+
+  // KPI
+  let due=0, paid=0, arrear=0, distAmt=0;
+  for (const r of items) { due+=parseFloat(r.due_amount||0); paid+=parseFloat(r.paid_amount||0); arrear+=parseFloat(r.arrear_amount||0); distAmt+=parseFloat(r.distributed_amount||0); }
+  $('kpi-income').innerHTML =
+    makeKpi('应缴合计', fmt(due), '万元', 'amber') +
+    makeKpi('实缴合计', fmt(paid), '万元', 'green') +
+    makeKpi('拖欠合计', fmt(arrear), '万元', arrear>0.0001?'red':'green') +
+    makeKpi('已分配合计', fmt(distAmt), '万元', 'blue');
+
+  // 按周期合并（同 gkey 同周期的多村合并）
+  const byPeriod = new Map();
+  for (const it of items) {
+    const pl = it.period_label;
+    if (!byPeriod.has(pl)) byPeriod.set(pl, []);
+    byPeriod.get(pl).push(it);
+  }
+
+  let html = '';
+  for (const [pl, pitems] of [...byPeriod.entries()].sort()) {
+    const pDue   = pitems.reduce((s,i)=>s+parseFloat(i.due_amount||0),0);
+    const pPaid  = pitems.reduce((s,i)=>s+parseFloat(i.paid_amount||0),0);
+    const pArr   = pitems.reduce((s,i)=>s+parseFloat(i.arrear_amount||0),0);
+    const pDist  = pitems.every(i=>i.is_distributed);
+    const pDistAt= (pitems[0].distributed_at||'').slice(0,10) || '—';
+    const pDistAmt = pitems.reduce((s,i)=>s+parseFloat(i.distributed_amount||0),0);
+    const arrCls = pArr > 0.0001 ? 'td-neg' : '';
+    const distTag = pDist ? '<span class="tag tag-ok">已分配</span>' : '<span class="tag tag-no">未分配</span>';
+    const needExp = pitems.length > 1;
+    const subGid  = 'inc-' + gkey.replace(/\W/g,'_') + '_' + pl.replace(/\W/g,'_');
+    const exp = needExp ? `<span class="exp-btn" onclick="toggleRows('${subGid}',this)">▶</span>` : '<span style="display:inline-block;width:28px"></span>';
+
+    html += `<tr class="r-main"><td class="td-period">${exp}${esc(pl)}</td><td class="td-num">${fmt(pDue)}</td><td class="td-num td-pos">${fmt(pPaid)}</td><td class="td-num ${arrCls}">${fmt(pArr)}</td><td>${distTag}</td><td class="td-sm">${pDistAt}</td><td class="td-num">${fmt(pDistAmt)}</td></tr>\n`;
+
+    if (needExp) {
+      for (const it of pitems) {
+        const ia = parseFloat(it.arrear_amount||0);
+        const ic = ia>0.0001 ? 'td-neg' : '';
+        const idt = it.is_distributed ? '<span class="tag tag-ok">✓</span>' : '<span class="tag tag-no">○</span>';
+        html += `<tr class="r-sub r-hidden" data-parent="${subGid}"><td class="td-period td-sub">↳ ${esc(it.proj_name)}</td><td class="td-num">${fmt(it.due_amount)}</td><td class="td-num td-pos">${fmt(it.paid_amount)}</td><td class="td-num ${ic}">${fmt(ia)}</td><td>${idt}</td><td class="td-sm">${(it.distributed_at||'').slice(0,10)||'—'}</td><td class="td-num">${fmt(it.distributed_amount||0)}</td></tr>\n`;
+      }
+    }
+  }
+  $('tbody-income').innerHTML = html || '<tr><td colspan="7" class="empty-state"><div class="empty-icon">📄</div>暂无到期收益记录</td></tr>';
+}
+
+/* ══════════════════════════════════════════════════════════════
+   渲染：拖欠明细
+══════════════════════════════════════════════════════════════ */
+function renderArrears() {
+  const data = PAM_DATA;
+  const groups = buildGroups(data.arrears, 'project_name');
+
+  // KPI
+  let tArr=0;
+  for (const r of data.arrears) tArr+=parseFloat(r.arrear_amount||0);
+  const cnt = groups.size;
+  $('kpi-arrears').innerHTML =
+    makeKpi('拖欠项目组', cnt, '个', 'red') +
+    makeKpi('拖欠总额', fmt(tArr), '万元', 'red') +
+    makeKpi('数据日期', PAM_DATA.today, '合同未到期不计入', '');
+
+  // 下拉
+  const sel = $('f-arrears');
+  sel.innerHTML = '<option value="">全部项目</option>';
+  for (const [gkey, items] of groups) {
+    const names = items.map(i=>i.project_name);
+    const opt = document.createElement('option');
+    opt.value = names.join('|'); opt.textContent = gkey;
+    sel.appendChild(opt);
+  }
+
+  renderArrearsRows(groups);
+}
+
+function renderArrearsRows(groups) {
+  let html = '';
+  for (const [gkey, gitems] of groups) {
+    // 按周期合并
+    const byPeriod = new Map();
+    for (const it of gitems) {
+      if (!byPeriod.has(it.period_label)) byPeriod.set(it.period_label,[]);
+      byPeriod.get(it.period_label).push(it);
+    }
+    const allNames = gitems.map(i=>i.project_name);
+    for (const [pl, pitems] of [...byPeriod.entries()].sort()) {
+      const pD = pitems.reduce((s,i)=>s+parseFloat(i.due_amount||0),0);
+      const pP = pitems.reduce((s,i)=>s+parseFloat(i.paid_amount||0),0);
+      const pA = pitems.reduce((s,i)=>s+parseFloat(i.arrear_amount||0),0);
+      const needExp = pitems.length > 1;
+      const subGid  = 'arr-'+gkey.replace(/\W/g,'_')+'_'+pl.replace(/\W/g,'_');
+      const exp = needExp ? `<span class="exp-btn" onclick="toggleRows('${subGid}',this)">▶</span>` : '';
+      html += `<tr class="r-main" data-project="${esc(allNames.join('|'))}"><td class="td-name">${exp}${esc(gkey)}</td><td class="td-period">${esc(pl)}</td><td class="td-num">${fmt(pD)}</td><td class="td-num td-pos">${fmt(pP)}</td><td class="td-num td-neg">${fmt(pA)}</td></tr>\n`;
+      if (needExp) {
+        for (const it of pitems) {
+          html += `<tr class="r-sub r-hidden" data-parent="${subGid}" data-project="${esc(it.project_name)}"><td class="td-name td-sub">↳ ${esc(it.project_name)}</td><td class="td-period">${esc(it.period_label)}</td><td class="td-num">${fmt(it.due_amount)}</td><td class="td-num td-pos">${fmt(it.paid_amount)}</td><td class="td-num td-neg">${fmt(it.arrear_amount)}</td></tr>\n`;
+        }
+      }
+    }
+  }
+  $('tbody-arrears').innerHTML = html || '<tr><td colspan="5" class="empty-state"><div class="empty-icon">✅</div>暂无拖欠记录</td></tr>';
+}
+
+function filterArrears() {
+  const val = $('f-arrears').value;
+  const names = val ? val.split('|') : [];
+  const groups = buildGroups(PAM_DATA.arrears, 'project_name');
+  if (!val) { renderArrearsRows(groups); return; }
+  const filtered = new Map();
+  for (const [gkey, items] of groups) {
+    if (items.some(i=>names.includes(i.project_name))) filtered.set(gkey, items);
+  }
+  renderArrearsRows(filtered);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   渲染：分配明细
+══════════════════════════════════════════════════════════════ */
+function renderDist() {
+  const data = PAM_DATA;
+  const groups = buildGroups(data.distributions, 'project_name');
+
+  const sel = $('f-dist');
+  sel.innerHTML = '<option value="">全部项目</option>';
+  for (const [gkey, items] of groups) {
+    const names = items.map(i=>i.project_name);
+    const opt = document.createElement('option');
+    opt.value = names.join('|'); opt.textContent = gkey;
+    sel.appendChild(opt);
+  }
+  renderDistRows(groups);
+}
+
+function renderDistRows(groups) {
+  let html = '';
+  for (const [gkey, gitems] of groups) {
+    const byPeriod = new Map();
+    for (const it of gitems) {
+      if (!byPeriod.has(it.period_label)) byPeriod.set(it.period_label,[]);
+      byPeriod.get(it.period_label).push(it);
+    }
+    const allNames = gitems.map(i=>i.project_name);
+    const gid = 'dg-'+gkey.replace(/\W/g,'_');
+    for (const [pl, pitems] of [...byPeriod.entries()].sort()) {
+      const pAmt = pitems.reduce((s,i)=>s+parseFloat(i.amount||0),0);
+      const subGid = gid+'_'+pl.replace(/\W/g,'_');
+      const distAt = (pitems[0].distributed_at||'').slice(0,10)||'—';
+      html += `<tr class="r-main" data-project="${esc(allNames.join('|'))}"><td class="td-name"><span class="exp-btn" onclick="toggleRows('${subGid}',this)">▶</span>${esc(gkey)}</td><td class="td-period">${esc(pl)}</td><td colspan="3" class="td-summary">${pitems.length} 人 &nbsp;·&nbsp; 合计 <strong>${fmtN(pAmt)}</strong> 元</td><td class="td-sm">${distAt}</td><td>—</td><td>—</td></tr>\n`;
+      for (const it of pitems) {
+        html += `<tr class="r-sub r-hidden" data-parent="${subGid}" data-project="${esc(it.project_name)}"><td class="td-sub td-name">↳ ${esc(it.project_name)}</td><td class="td-period">${esc(it.period_label)}</td><td>${esc(it.name)}</td><td class="td-num">${fmtN(it.amount)}</td><td class="td-sm">${(it.distributed_at||'').slice(0,10)||'—'}</td><td class="td-sm">${esc(it.id_card_masked||it.id_card)}</td><td class="td-sm">${esc(it.bank_card)}</td><td class="td-sm">${esc(it.remark||'—')}</td></tr>\n`;
+      }
+    }
+  }
+  $('tbody-dist').innerHTML = html || '<tr><td colspan="8" class="empty-state"><div class="empty-icon">📤</div>暂无分配记录</td></tr>';
+}
+
+function filterDist() {
+  const val = $('f-dist').value;
+  const names = val ? val.split('|') : [];
+  const groups = buildGroups(PAM_DATA.distributions, 'project_name');
+  if (!val) { renderDistRows(groups); return; }
+  const filtered = new Map();
+  for (const [gkey, items] of groups) {
+    if (items.some(i=>names.includes(i.project_name))) filtered.set(gkey, items);
+  }
+  renderDistRows(filtered);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Excel 导出
+══════════════════════════════════════════════════════════════ */
+const SHEETS = {
+  projects:  { key:'projects',      name:'项目总览' },
+  income:    { key:'income',        name:'收益台账' },
+  arrears:   { key:'arrears',       name:'拖欠明细' },
+  dist:      { key:'distributions', name:'分配明细' },
+};
+
+function exportExcel(tab) {
+  const cfg  = SHEETS[tab];
+  const rows = PAM_DATA.export[cfg.key];
+  if (!rows || !rows.length) { alert('暂无数据可导出'); return; }
+  const ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = Object.keys(rows[0]).map(k => ({ wch: Math.max(k.length*2, 16) }));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, cfg.name);
+  XLSX.writeFile(wb, '帮扶收益_' + cfg.name + '_' + PAM_DATA.today + '.xlsx');
+}
+
+function exportAll() {
+  const wb = XLSX.utils.book_new();
+  for (const cfg of Object.values(SHEETS)) {
+    const rows = PAM_DATA.export[cfg.key];
+    if (rows && rows.length) {
+      const ws = XLSX.utils.json_to_sheet(rows);
+      ws['!cols'] = Object.keys(rows[0]).map(k => ({ wch: Math.max(k.length*2, 16) }));
+      XLSX.utils.book_append_sheet(wb, ws, cfg.name);
+    }
+  }
+  XLSX.writeFile(wb, '帮扶收益_完整导出_' + PAM_DATA.today + '.xlsx');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   侧边栏（移动端）
+══════════════════════════════════════════════════════════════ */
+function toggleSidebar() {
+  $('sidebar').classList.toggle('open');
+  $('overlay').classList.toggle('show');
+}
+function closeSidebar() {
+  $('sidebar').classList.remove('open');
+  $('overlay').classList.remove('show');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   初始化
+══════════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  const el = $('sb-gentime');
+  if (el && PAM_DATA.generated_at) el.textContent = PAM_DATA.generated_at;
+  renderOverview();
+  renderArrears();
+  renderDist();
+});
+</script>
+</body>
+</html>
