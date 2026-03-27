@@ -108,10 +108,10 @@
   .stat .lbl { font-size: .82rem; color: var(--ink3); margin-top: 4px; font-weight: 500; }
 
   /* ── Note ── */
-  .note-row td { font-size: .88rem !important; }
+  
   .proj-name { font-weight: 700; font-size: .95rem; }
-  .proj-name-link { cursor: pointer; color: var(--pri); transition: color .2s; }
-  .proj-name-link:hover { color: var(--pri-dark); text-decoration: underline; }
+  
+  
   .note {
     background: linear-gradient(135deg, #fff9db 0%, #fff3bf 100%);
     border: 1px solid #ffd43b; border-radius: var(--radius-sm);
@@ -165,12 +165,12 @@
     border-radius: 6px; background: transparent; color: var(--gold);
     transition: all .2s; font-weight: 600;
   }
-  .expand-btn:hover { background: var(--gold); color: #fff; transform: scale(1.05); }
+  
   .proj-main-row { background: var(--gold-pale) !important; cursor: pointer; }
   .proj-main-row:hover { background: #ffe5a0 !important; }
   .proj-main-row td:first-child { font-weight: 700; font-size: .92rem; }
-  .proj-sub-row td { background: var(--pri-light); font-size: .76rem; }
-  .proj-sub-row:hover td { background: #dbe4ff; }
+  
+  
   .sub-indent { padding-left: 28px !important; color: var(--pri); font-weight: 500; }
   .hidden { display: none !important; }
 
@@ -179,10 +179,10 @@
     gap: 10px; margin: 8px 0; }
   .proj-card { background: var(--card); border-radius: var(--radius-sm); padding: 12px 14px;
     box-shadow: var(--shadow); border: 1px solid var(--border); transition: all .2s; }
-  .proj-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-  .proj-card h3 { font-size: .88rem; color: var(--ink); margin-bottom: 6px; }
-  .proj-card .detail { font-size: .85rem; color: var(--ink2); line-height: 1.7; }
-  .proj-card .detail b { color: var(--ink); }
+  
+  
+  
+  
 
   /* ── 光伏看板 ── */
   .solar-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -206,7 +206,7 @@
   /* ── Print ── */
   @media print {
     .banner { background: #333 !important; -webkit-print-color-adjust: exact; }
-    .tabs, .filter-bar, .expand-btn { display: none !important; }
+    .tabs, .filter-bar, 
     .panel { display: block !important; }
     .tbl-wrap { max-height: none; overflow: visible; }
   }
@@ -230,426 +230,78 @@
 
   <div class="tabs">
     <div class="tab active" onclick="switchTab('projects',this)">📋 项目总览</div>
+    <div class="tab" onclick="switchTab('income',this)">💰 收益台账</div>
     <div class="tab" onclick="switchTab('arrears',this)">⚠️ 拖欠明细</div>
     <div class="tab" onclick="switchTab('distribution',this)">📤 分配明细</div>
   </div>
 
   <!-- 项目总览 -->
   <div id="panel-projects" class="panel active">
-    <div class="proj-grid">
-      <div class="proj-card" data-group="grp-2022年洛宁县马店镇吕村村银洞河露营基地项目">
-        <h3><span class="proj-name-link" onclick="viewProjectIncome('2022年洛宁县马店镇吕村村银洞河露营基地项目')">2022年洛宁县马店镇吕村村银洞河露营基地项目</span><span class="arrear-badge">拖欠</span></h3>
-        <div class="detail">
-          <div>🏘️ 吕村村</div>
-          <div>🤝 洛宁森郁生态农业开发有限公司</div>
-          <div>📅 2022-12-08 ~ 2025-12-07</div>
-        </div>
-        <div class="metrics">
-          <div><span class="m-label">应缴</span><span class="m-value">7.0500</span></div>
-          <div><span class="m-label">实缴</span><span class="m-value">21.1500</span></div>
-          <div><span class="m-label">已分配</span><span class="m-value">15.5500</span></div>
-          <div arrear-yes><span class="m-label">拖欠</span><span class="m-value">5.6000</span></div>
-        </div>
-      </div>
-      <div class="proj-card" data-group="grp-2022年洛宁县马店镇石门村花椒深加工资产投资收益项目">
-        <h3><span class="proj-name-link" onclick="viewProjectIncome('2022年洛宁县马店镇石门村花椒深加工资产投资收益项目')">2022年洛宁县马店镇石门村花椒深加工资产投资收益项目</span></h3>
-        <div class="detail">
-          <div>🏘️ 石门村</div>
-          <div>🤝 洛宁县马店镇石香花椒种植专业合作社</div>
-          <div>📅 2023-03-09 ~ 2026-03-08</div>
-        </div>
-        <div class="metrics">
-          <div><span class="m-label">应缴</span><span class="m-value">4.1700</span></div>
-          <div><span class="m-label">实缴</span><span class="m-value">12.5100</span></div>
-          <div><span class="m-label">已分配</span><span class="m-value">12.5100</span></div>
-          <div><span class="m-label">拖欠</span><span class="m-value">0.0000</span></div>
-        </div>
-      </div>
-      <div class="proj-card" data-group="grp-2023年洛宁县马店镇杨村村高标准农业观光采摘园项目">
-        <h3><span class="proj-name-link" onclick="viewProjectIncome('2023年洛宁县马店镇杨村村高标准农业观光采摘园项目')">2023年洛宁县马店镇杨村村高标准农业观光采摘园项目</span></h3>
-        <div class="detail">
-          <div>🏘️ 杨村村</div>
-          <div>🤝 洛阳臻果果农业开发有限公司</div>
-          <div>📅 2024-01-01 ~ 2033-12-31</div>
-        </div>
-        <div class="metrics">
-          <div><span class="m-label">应缴</span><span class="m-value">2.5000</span></div>
-          <div><span class="m-label">实缴</span><span class="m-value">5.0000</span></div>
-          <div><span class="m-label">已分配</span><span class="m-value">5.0000</span></div>
-          <div><span class="m-label">拖欠</span><span class="m-value">0.0000</span></div>
-        </div>
-      </div>
-      <div class="proj-card" data-group="grp-2023年洛宁县马店镇环洛河现代农业产业园区水产养殖项目">
-        <h3><span class="proj-name-link" onclick="viewProjectIncome('2023年洛宁县马店镇环洛河现代农业产业园区水产养殖项目')">2023年洛宁县马店镇环洛河现代农业产业园区水产养殖项目</span><span class="arrear-badge">拖欠</span></h3>
-        <div class="detail">
-          <div>🏘️ 张村村</div>
-          <div>🤝 洛宁县西子湖渔业发展有限公司</div>
-          <div>📅 2024-01-01 ~ 2033-12-31</div>
-        </div>
-        <div class="metrics">
-          <div><span class="m-label">应缴</span><span class="m-value">13.0000</span></div>
-          <div><span class="m-label">实缴</span><span class="m-value">26.0000</span></div>
-          <div><span class="m-label">已分配</span><span class="m-value">15.6000</span></div>
-          <div arrear-yes><span class="m-label">拖欠</span><span class="m-value">10.4000</span></div>
-        </div>
-      </div>
-      <div class="proj-card" data-group="grp-2024年洛宁县马店镇东仇村渔业养殖项目">
-        <h3><span class="proj-name-link" onclick="viewProjectIncome('2024年洛宁县马店镇东仇村渔业养殖项目')">2024年洛宁县马店镇东仇村渔业养殖项目</span></h3>
-        <div class="detail">
-          <div>🏘️ 东仇村</div>
-          <div>🤝 北京富莱文化传媒有限公司</div>
-          <div>📅 2025-04-01 ~ 2035-03-31</div>
-        </div>
-        <div class="metrics">
-          <div><span class="m-label">应缴</span><span class="m-value">2.5000</span></div>
-          <div><span class="m-label">实缴</span><span class="m-value">0.0000</span></div>
-          <div><span class="m-label">已分配</span><span class="m-value">2.5000</span></div>
-          <div><span class="m-label">拖欠</span><span class="m-value">0.0000</span></div>
-        </div>
-      </div>
-      <div class="proj-card" data-group="grp-光伏电站项目">
-        <h3><span class="proj-name-link" onclick="viewProjectIncome('光伏电站项目')">光伏电站项目</span><button class="expand-btn" onclick="toggleCardGroup(this)">▶ 展开明细</button></h3>
-        <div class="detail">
-          <div>🏘️ 上窑村、东仇村、关庙村、太平庄村、小街村、张村村、田村村</div>
-          <div>🤝 县城投公司</div>
-          <div>📅 2018-01-01 ~ 2037-12-31</div>
-        </div>
-        <div class="metrics">
-          <div><span class="m-label">应缴</span><span class="m-value">87.5000</span></div>
-          <div><span class="m-label">实缴</span><span class="m-value">717.5000</span></div>
-          <div><span class="m-label">已分配</span><span class="m-value">717.5000</span></div>
-          <div><span class="m-label">拖欠</span><span class="m-value">0.0000</span></div>
-        </div>
-      <div class="proj-subs hidden" data-parent="grp-光伏电站项目">
-        <div class="proj-sub-item">
-          <div class="sub-name">上窑村光伏电站项目</div>
-          <div class="sub-metrics">
-            <span>应缴 <b>12.5000</b></span>
-            <span>实缴 <b>102.5000</b></span>
-            <span>已分配 <b>102.5000</b></span>
-            <span class="">拖欠 <b>0.0000</b></span>
-          </div>
-        </div>
-        <div class="proj-sub-item">
-          <div class="sub-name">东仇村光伏电站项目</div>
-          <div class="sub-metrics">
-            <span>应缴 <b>12.5000</b></span>
-            <span>实缴 <b>102.5000</b></span>
-            <span>已分配 <b>102.5000</b></span>
-            <span class="">拖欠 <b>0.0000</b></span>
-          </div>
-        </div>
-        <div class="proj-sub-item">
-          <div class="sub-name">关庙村光伏电站项目</div>
-          <div class="sub-metrics">
-            <span>应缴 <b>12.5000</b></span>
-            <span>实缴 <b>102.5000</b></span>
-            <span>已分配 <b>102.5000</b></span>
-            <span class="">拖欠 <b>0.0000</b></span>
-          </div>
-        </div>
-        <div class="proj-sub-item">
-          <div class="sub-name">太平庄村光伏电站项目</div>
-          <div class="sub-metrics">
-            <span>应缴 <b>12.5000</b></span>
-            <span>实缴 <b>102.5000</b></span>
-            <span>已分配 <b>102.5000</b></span>
-            <span class="">拖欠 <b>0.0000</b></span>
-          </div>
-        </div>
-        <div class="proj-sub-item">
-          <div class="sub-name">小街村光伏电站项目</div>
-          <div class="sub-metrics">
-            <span>应缴 <b>12.5000</b></span>
-            <span>实缴 <b>102.5000</b></span>
-            <span>已分配 <b>102.5000</b></span>
-            <span class="">拖欠 <b>0.0000</b></span>
-          </div>
-        </div>
-        <div class="proj-sub-item">
-          <div class="sub-name">张村村光伏电站项目</div>
-          <div class="sub-metrics">
-            <span>应缴 <b>12.5000</b></span>
-            <span>实缴 <b>102.5000</b></span>
-            <span>已分配 <b>102.5000</b></span>
-            <span class="">拖欠 <b>0.0000</b></span>
-          </div>
-        </div>
-        <div class="proj-sub-item">
-          <div class="sub-name">田村村光伏电站项目</div>
-          <div class="sub-metrics">
-            <span>应缴 <b>12.5000</b></span>
-            <span>实缴 <b>102.5000</b></span>
-            <span>已分配 <b>102.5000</b></span>
-            <span class="">拖欠 <b>0.0000</b></span>
-          </div>
-        </div>
-      </div>
-      </div>
-      <div class="proj-card" data-group="grp-20万元集体经济项目">
-        <h3><span class="proj-name-link" onclick="viewProjectIncome('20万元集体经济项目')">20万元集体经济项目</span><button class="expand-btn" onclick="toggleCardGroup(this)">▶ 展开明细</button></h3>
-        <div class="detail">
-          <div>🏘️ 东仇村、关庙村、小街村、焦河村、石门村、霍岭村</div>
-          <div>🤝 县农投公司</div>
-          <div>📅 2023-04-01 ~ 2026-03-31</div>
-        </div>
-        <div class="metrics">
-          <div><span class="m-label">应缴</span><span class="m-value">6.0000</span></div>
-          <div><span class="m-label">实缴</span><span class="m-value">12.0000</span></div>
-          <div><span class="m-label">已分配</span><span class="m-value">12.0000</span></div>
-          <div><span class="m-label">拖欠</span><span class="m-value">0.0000</span></div>
-        </div>
-      <div class="proj-subs hidden" data-parent="grp-20万元集体经济项目">
-        <div class="proj-sub-item">
-          <div class="sub-name">东仇村20万元集体经济项目</div>
-          <div class="sub-metrics">
-            <span>应缴 <b>1.0000</b></span>
-            <span>实缴 <b>2.0000</b></span>
-            <span>已分配 <b>2.0000</b></span>
-            <span class="">拖欠 <b>0.0000</b></span>
-          </div>
-        </div>
-        <div class="proj-sub-item">
-          <div class="sub-name">关庙村20万元集体经济项目</div>
-          <div class="sub-metrics">
-            <span>应缴 <b>1.0000</b></span>
-            <span>实缴 <b>2.0000</b></span>
-            <span>已分配 <b>2.0000</b></span>
-            <span class="">拖欠 <b>0.0000</b></span>
-          </div>
-        </div>
-        <div class="proj-sub-item">
-          <div class="sub-name">小街村20万元集体经济项目</div>
-          <div class="sub-metrics">
-            <span>应缴 <b>1.0000</b></span>
-            <span>实缴 <b>2.0000</b></span>
-            <span>已分配 <b>2.0000</b></span>
-            <span class="">拖欠 <b>0.0000</b></span>
-          </div>
-        </div>
-        <div class="proj-sub-item">
-          <div class="sub-name">焦河村20万元集体经济项目</div>
-          <div class="sub-metrics">
-            <span>应缴 <b>1.0000</b></span>
-            <span>实缴 <b>2.0000</b></span>
-            <span>已分配 <b>2.0000</b></span>
-            <span class="">拖欠 <b>0.0000</b></span>
-          </div>
-        </div>
-        <div class="proj-sub-item">
-          <div class="sub-name">石门村20万元集体经济项目</div>
-          <div class="sub-metrics">
-            <span>应缴 <b>1.0000</b></span>
-            <span>实缴 <b>2.0000</b></span>
-            <span>已分配 <b>2.0000</b></span>
-            <span class="">拖欠 <b>0.0000</b></span>
-          </div>
-        </div>
-        <div class="proj-sub-item">
-          <div class="sub-name">霍岭村20万元集体经济项目</div>
-          <div class="sub-metrics">
-            <span>应缴 <b>1.0000</b></span>
-            <span>实缴 <b>2.0000</b></span>
-            <span>已分配 <b>2.0000</b></span>
-            <span class="">拖欠 <b>0.0000</b></span>
-          </div>
-        </div>
-      </div>
-      </div>
-      <div class="proj-card" data-group="grp-樱桃种植投资项目">
-        <h3><span class="proj-name-link" onclick="viewProjectIncome('樱桃种植投资项目')">樱桃种植投资项目</span><span class="arrear-badge">拖欠</span><button class="expand-btn" onclick="toggleCardGroup(this)">▶ 展开明细</button></h3>
-        <div class="detail">
-          <div>🏘️ 伙子村、刘沟村、前乔村、后乔村、吕村村、坡根村、杨村村、沙陀村、窑湾村、罗门村、胡原村、虎庙村、马西村</div>
-          <div>🤝 县农投公司</div>
-          <div>📅 2020-04-28 ~ 2026-04-27</div>
-        </div>
-        <div class="metrics">
-          <div><span class="m-label">应缴</span><span class="m-value">19.5000</span></div>
-          <div><span class="m-label">实缴</span><span class="m-value">97.5000</span></div>
-          <div><span class="m-label">已分配</span><span class="m-value">89.7000</span></div>
-          <div arrear-yes><span class="m-label">拖欠</span><span class="m-value">7.8000</span></div>
-        </div>
-      <div class="proj-subs hidden" data-parent="grp-樱桃种植投资项目">
-        <div class="proj-sub-item">
-          <div class="sub-name">伙子村樱桃种植投资项目</div>
-          <div class="sub-metrics">
-            <span>应缴 <b>1.5000</b></span>
-            <span>实缴 <b>7.5000</b></span>
-            <span>已分配 <b>6.9000</b></span>
-            <span class=" arrear-yes">拖欠 <b>0.6000</b></span>
-          </div>
-        </div>
-        <div class="proj-sub-item">
-          <div class="sub-name">刘沟村樱桃种植投资项目</div>
-          <div class="sub-metrics">
-            <span>应缴 <b>1.5000</b></span>
-            <span>实缴 <b>7.5000</b></span>
-            <span>已分配 <b>6.9000</b></span>
-            <span class=" arrear-yes">拖欠 <b>0.6000</b></span>
-          </div>
-        </div>
-        <div class="proj-sub-item">
-          <div class="sub-name">前乔村樱桃种植投资项目</div>
-          <div class="sub-metrics">
-            <span>应缴 <b>1.5000</b></span>
-            <span>实缴 <b>7.5000</b></span>
-            <span>已分配 <b>6.9000</b></span>
-            <span class=" arrear-yes">拖欠 <b>0.6000</b></span>
-          </div>
-        </div>
-        <div class="proj-sub-item">
-          <div class="sub-name">后乔村樱桃种植投资项目</div>
-          <div class="sub-metrics">
-            <span>应缴 <b>1.5000</b></span>
-            <span>实缴 <b>7.5000</b></span>
-            <span>已分配 <b>6.9000</b></span>
-            <span class=" arrear-yes">拖欠 <b>0.6000</b></span>
-          </div>
-        </div>
-        <div class="proj-sub-item">
-          <div class="sub-name">吕村村樱桃种植投资项目</div>
-          <div class="sub-metrics">
-            <span>应缴 <b>1.5000</b></span>
-            <span>实缴 <b>7.5000</b></span>
-            <span>已分配 <b>6.9000</b></span>
-            <span class=" arrear-yes">拖欠 <b>0.6000</b></span>
-          </div>
-        </div>
-        <div class="proj-sub-item">
-          <div class="sub-name">坡根村樱桃种植投资项目</div>
-          <div class="sub-metrics">
-            <span>应缴 <b>1.5000</b></span>
-            <span>实缴 <b>7.5000</b></span>
-            <span>已分配 <b>6.9000</b></span>
-            <span class=" arrear-yes">拖欠 <b>0.6000</b></span>
-          </div>
-        </div>
-        <div class="proj-sub-item">
-          <div class="sub-name">杨村村樱桃种植投资项目</div>
-          <div class="sub-metrics">
-            <span>应缴 <b>1.5000</b></span>
-            <span>实缴 <b>7.5000</b></span>
-            <span>已分配 <b>6.9000</b></span>
-            <span class=" arrear-yes">拖欠 <b>0.6000</b></span>
-          </div>
-        </div>
-        <div class="proj-sub-item">
-          <div class="sub-name">沙陀村樱桃种植投资项目</div>
-          <div class="sub-metrics">
-            <span>应缴 <b>1.5000</b></span>
-            <span>实缴 <b>7.5000</b></span>
-            <span>已分配 <b>6.9000</b></span>
-            <span class=" arrear-yes">拖欠 <b>0.6000</b></span>
-          </div>
-        </div>
-        <div class="proj-sub-item">
-          <div class="sub-name">窑湾村樱桃种植投资项目</div>
-          <div class="sub-metrics">
-            <span>应缴 <b>1.5000</b></span>
-            <span>实缴 <b>7.5000</b></span>
-            <span>已分配 <b>6.9000</b></span>
-            <span class=" arrear-yes">拖欠 <b>0.6000</b></span>
-          </div>
-        </div>
-        <div class="proj-sub-item">
-          <div class="sub-name">罗门村樱桃种植投资项目</div>
-          <div class="sub-metrics">
-            <span>应缴 <b>1.5000</b></span>
-            <span>实缴 <b>7.5000</b></span>
-            <span>已分配 <b>6.9000</b></span>
-            <span class=" arrear-yes">拖欠 <b>0.6000</b></span>
-          </div>
-        </div>
-        <div class="proj-sub-item">
-          <div class="sub-name">胡原村樱桃种植投资项目</div>
-          <div class="sub-metrics">
-            <span>应缴 <b>1.5000</b></span>
-            <span>实缴 <b>7.5000</b></span>
-            <span>已分配 <b>6.9000</b></span>
-            <span class=" arrear-yes">拖欠 <b>0.6000</b></span>
-          </div>
-        </div>
-        <div class="proj-sub-item">
-          <div class="sub-name">虎庙村樱桃种植投资项目</div>
-          <div class="sub-metrics">
-            <span>应缴 <b>1.5000</b></span>
-            <span>实缴 <b>7.5000</b></span>
-            <span>已分配 <b>6.9000</b></span>
-            <span class=" arrear-yes">拖欠 <b>0.6000</b></span>
-          </div>
-        </div>
-        <div class="proj-sub-item">
-          <div class="sub-name">马西村樱桃种植投资项目</div>
-          <div class="sub-metrics">
-            <span>应缴 <b>1.5000</b></span>
-            <span>实缴 <b>7.5000</b></span>
-            <span>已分配 <b>6.9000</b></span>
-            <span class=" arrear-yes">拖欠 <b>0.6000</b></span>
-          </div>
-        </div>
-      </div>
-      </div>
-      <div class="proj-card" data-group="grp-70_万元集体经济项目">
-        <h3><span class="proj-name-link" onclick="viewProjectIncome('70 万元集体经济项目')">70 万元集体经济项目</span><span class="arrear-badge">拖欠</span><button class="expand-btn" onclick="toggleCardGroup(this)">▶ 展开明细</button></h3>
-        <div class="detail">
-          <div>🏘️ 焦河村、石门村、霍岭村</div>
-          <div>🤝 县农投公司</div>
-          <div>📅 2018-08-10 ~ 2026-08-10</div>
-        </div>
-        <div class="metrics">
-          <div><span class="m-label">应缴</span><span class="m-value">14.7000</span></div>
-          <div><span class="m-label">实缴</span><span class="m-value">92.4000</span></div>
-          <div><span class="m-label">已分配</span><span class="m-value">81.9000</span></div>
-          <div arrear-yes><span class="m-label">拖欠</span><span class="m-value">10.5000</span></div>
-        </div>
-      <div class="proj-subs hidden" data-parent="grp-70_万元集体经济项目">
-        <div class="proj-sub-item">
-          <div class="sub-name">焦河村70 万元集体经济项目</div>
-          <div class="sub-metrics">
-            <span>应缴 <b>4.9000</b></span>
-            <span>实缴 <b>30.8000</b></span>
-            <span>已分配 <b>27.3000</b></span>
-            <span class=" arrear-yes">拖欠 <b>3.5000</b></span>
-          </div>
-        </div>
-        <div class="proj-sub-item">
-          <div class="sub-name">石门村70 万元集体经济项目</div>
-          <div class="sub-metrics">
-            <span>应缴 <b>4.9000</b></span>
-            <span>实缴 <b>30.8000</b></span>
-            <span>已分配 <b>27.3000</b></span>
-            <span class=" arrear-yes">拖欠 <b>3.5000</b></span>
-          </div>
-        </div>
-        <div class="proj-sub-item">
-          <div class="sub-name">霍岭村70 万元集体经济项目</div>
-          <div class="sub-metrics">
-            <span>应缴 <b>4.9000</b></span>
-            <span>实缴 <b>30.8000</b></span>
-            <span>已分配 <b>27.3000</b></span>
-            <span class=" arrear-yes">拖欠 <b>3.5000</b></span>
-          </div>
-        </div>
-      </div>
-      </div>
+    <div class="filter-bar">
+      <label>筛选项目：</label>
+      <select id="filter-projects" onchange="filterRows('tbody-projects','filter-projects')">
+
+      </select>
     </div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>项目名称</th><th>所属村</th><th>运营主体</th><th>合同期限</th><th>约定年收益(万)</th><th>应缴合计(万)</th><th>实缴合计(万)</th><th>拖欠合计(万)</th></tr></thead>
+      <tbody id="tbody-projects">
+        <tr class="proj-main-row" data-group="grp-2022年洛宁县马店镇吕村村银洞河露营基地项目"><td>2022年洛宁县马店镇吕村村银洞河露营基地项目</td><td>吕村村</td><td>洛宁森郁生态农业开发有限公司</td><td>2022-12-08 ~ 2025-12-07</td><td>7.0500</td><td>21.1500</td><td>15.5500</td><td>5.6000</td></tr>
+        <tr class="proj-main-row" data-group="grp-2022年洛宁县马店镇石门村花椒深加工资产投资收益项目"><td>2022年洛宁县马店镇石门村花椒深加工资产投资收益项目</td><td>石门村</td><td>洛宁县马店镇石香花椒种植专业合作社</td><td>2023-03-09 ~ 2026-03-08</td><td>4.1700</td><td>12.5100</td><td>12.5100</td><td>0.0000</td></tr>
+        <tr class="proj-main-row" data-group="grp-2023年洛宁县马店镇杨村村高标准农业观光采摘园项目"><td>2023年洛宁县马店镇杨村村高标准农业观光采摘园项目</td><td>杨村村</td><td>洛阳臻果果农业开发有限公司</td><td>2024-01-01 ~ 2033-12-31</td><td>2.5000</td><td>5.0000</td><td>5.0000</td><td>0.0000</td></tr>
+        <tr class="proj-main-row" data-group="grp-2023年洛宁县马店镇环洛河现代农业产业园区水产养殖项目"><td>2023年洛宁县马店镇环洛河现代农业产业园区水产养殖项目</td><td>张村村</td><td>洛宁县西子湖渔业发展有限公司</td><td>2024-01-01 ~ 2033-12-31</td><td>13.0000</td><td>26.0000</td><td>15.6000</td><td>10.4000</td></tr>
+        <tr class="proj-main-row" data-group="grp-2024年洛宁县马店镇东仇村渔业养殖项目"><td>2024年洛宁县马店镇东仇村渔业养殖项目</td><td>东仇村</td><td>北京富莱文化传媒有限公司</td><td>2025-04-01 ~ 2035-03-31</td><td>2.5000</td><td>0.0000</td><td>2.5000</td><td>0.0000</td></tr>
+        <tr class="proj-main-row" data-group="grp-光伏电站项目"><td><span class="proj-name proj-name-link" onclick="viewProjectIncome('光伏电站项目')">光伏电站项目</span><button class="expand-btn" onclick="toggleGroup(this)">▶ 展开明细</button></td><td>上窑村、东仇村、关庙村、太平庄村、小街村、张村村、田村村</td><td>县城投公司</td><td>2018-01-01 ~ 2037-12-31</td><td>87.5000</td><td>717.5000</td><td>717.5000</td><td>0.0000</td></tr>
+        <tr class="proj-sub-row hidden" data-parent="grp-光伏电站项目"><td>↳ 上窑村光伏电站项目</td><td>上窑村</td><td>县城投公司</td><td>2018-01-01 ~ 2037-12-31</td><td>12.5000</td><td>102.5000</td><td>102.5000</td><td>0.0000</td></tr>
+        <tr class="proj-sub-row hidden" data-parent="grp-光伏电站项目"><td>↳ 东仇村光伏电站项目</td><td>东仇村</td><td>县城投公司</td><td>2018-01-01 ~ 2037-12-31</td><td>12.5000</td><td>102.5000</td><td>102.5000</td><td>0.0000</td></tr>
+        <tr class="proj-sub-row hidden" data-parent="grp-光伏电站项目"><td>↳ 关庙村光伏电站项目</td><td>关庙村</td><td>县城投公司</td><td>2018-01-01 ~ 2037-12-31</td><td>12.5000</td><td>102.5000</td><td>102.5000</td><td>0.0000</td></tr>
+        <tr class="proj-sub-row hidden" data-parent="grp-光伏电站项目"><td>↳ 太平庄村光伏电站项目</td><td>太平庄村</td><td>县城投公司</td><td>2018-01-01 ~ 2037-12-31</td><td>12.5000</td><td>102.5000</td><td>102.5000</td><td>0.0000</td></tr>
+        <tr class="proj-sub-row hidden" data-parent="grp-光伏电站项目"><td>↳ 小街村光伏电站项目</td><td>小街村</td><td>县城投公司</td><td>2018-01-01 ~ 2037-12-31</td><td>12.5000</td><td>102.5000</td><td>102.5000</td><td>0.0000</td></tr>
+        <tr class="proj-sub-row hidden" data-parent="grp-光伏电站项目"><td>↳ 张村村光伏电站项目</td><td>张村村</td><td>县城投公司</td><td>2018-01-01 ~ 2037-12-31</td><td>12.5000</td><td>102.5000</td><td>102.5000</td><td>0.0000</td></tr>
+        <tr class="proj-sub-row hidden" data-parent="grp-光伏电站项目"><td>↳ 田村村光伏电站项目</td><td>田村村</td><td>县城投公司</td><td>2018-01-01 ~ 2037-12-31</td><td>12.5000</td><td>102.5000</td><td>102.5000</td><td>0.0000</td></tr>
+        <tr class="proj-main-row" data-group="grp-20万元集体经济项目"><td><span class="proj-name proj-name-link" onclick="viewProjectIncome('20万元集体经济项目')">20万元集体经济项目</span><button class="expand-btn" onclick="toggleGroup(this)">▶ 展开明细</button></td><td>东仇村、关庙村、小街村、焦河村、石门村、霍岭村</td><td>县农投公司</td><td>2023-04-01 ~ 2026-03-31</td><td>6.0000</td><td>12.0000</td><td>12.0000</td><td>0.0000</td></tr>
+        <tr class="proj-sub-row hidden" data-parent="grp-20万元集体经济项目"><td>↳ 东仇村20万元集体经济项目</td><td>东仇村</td><td>县农投公司</td><td>2023-04-01 ~ 2026-03-31</td><td>1.0000</td><td>2.0000</td><td>2.0000</td><td>0.0000</td></tr>
+        <tr class="proj-sub-row hidden" data-parent="grp-20万元集体经济项目"><td>↳ 关庙村20万元集体经济项目</td><td>关庙村</td><td>县农投公司</td><td>2023-04-01 ~ 2026-03-31</td><td>1.0000</td><td>2.0000</td><td>2.0000</td><td>0.0000</td></tr>
+        <tr class="proj-sub-row hidden" data-parent="grp-20万元集体经济项目"><td>↳ 小街村20万元集体经济项目</td><td>小街村</td><td>县农投公司</td><td>2023-04-01 ~ 2026-03-31</td><td>1.0000</td><td>2.0000</td><td>2.0000</td><td>0.0000</td></tr>
+        <tr class="proj-sub-row hidden" data-parent="grp-20万元集体经济项目"><td>↳ 焦河村20万元集体经济项目</td><td>焦河村</td><td>县农投公司</td><td>2023-04-01 ~ 2026-03-31</td><td>1.0000</td><td>2.0000</td><td>2.0000</td><td>0.0000</td></tr>
+        <tr class="proj-sub-row hidden" data-parent="grp-20万元集体经济项目"><td>↳ 石门村20万元集体经济项目</td><td>石门村</td><td>县农投公司</td><td>2023-04-01 ~ 2026-03-31</td><td>1.0000</td><td>2.0000</td><td>2.0000</td><td>0.0000</td></tr>
+        <tr class="proj-sub-row hidden" data-parent="grp-20万元集体经济项目"><td>↳ 霍岭村20万元集体经济项目</td><td>霍岭村</td><td>县农投公司</td><td>2023-04-01 ~ 2026-03-31</td><td>1.0000</td><td>2.0000</td><td>2.0000</td><td>0.0000</td></tr>
+        <tr class="proj-main-row" data-group="grp-樱桃种植投资项目"><td><span class="proj-name proj-name-link" onclick="viewProjectIncome('樱桃种植投资项目')">樱桃种植投资项目</span><button class="expand-btn" onclick="toggleGroup(this)">▶ 展开明细</button></td><td>伙子村、刘沟村、前乔村、后乔村、吕村村、坡根村、杨村村、沙陀村、窑湾村、罗门村、胡原村、虎庙村、马西村</td><td>县农投公司</td><td>2020-04-28 ~ 2026-04-27</td><td>19.5000</td><td>97.5000</td><td>89.7000</td><td>7.8000</td></tr>
+        <tr class="proj-sub-row hidden" data-parent="grp-樱桃种植投资项目"><td>↳ 伙子村樱桃种植投资项目</td><td>伙子村</td><td>县农投公司</td><td>2020-04-28 ~ 2026-04-27</td><td>1.5000</td><td>7.5000</td><td>6.9000</td><td>0.6000</td></tr>
+        <tr class="proj-sub-row hidden" data-parent="grp-樱桃种植投资项目"><td>↳ 刘沟村樱桃种植投资项目</td><td>刘沟村</td><td>县农投公司</td><td>2020-04-28 ~ 2026-04-27</td><td>1.5000</td><td>7.5000</td><td>6.9000</td><td>0.6000</td></tr>
+        <tr class="proj-sub-row hidden" data-parent="grp-樱桃种植投资项目"><td>↳ 前乔村樱桃种植投资项目</td><td>前乔村</td><td>县农投公司</td><td>2020-04-28 ~ 2026-04-27</td><td>1.5000</td><td>7.5000</td><td>6.9000</td><td>0.6000</td></tr>
+        <tr class="proj-sub-row hidden" data-parent="grp-樱桃种植投资项目"><td>↳ 后乔村樱桃种植投资项目</td><td>后乔村</td><td>县农投公司</td><td>2020-04-28 ~ 2026-04-27</td><td>1.5000</td><td>7.5000</td><td>6.9000</td><td>0.6000</td></tr>
+        <tr class="proj-sub-row hidden" data-parent="grp-樱桃种植投资项目"><td>↳ 吕村村樱桃种植投资项目</td><td>吕村村</td><td>县农投公司</td><td>2020-04-28 ~ 2026-04-27</td><td>1.5000</td><td>7.5000</td><td>6.9000</td><td>0.6000</td></tr>
+        <tr class="proj-sub-row hidden" data-parent="grp-樱桃种植投资项目"><td>↳ 坡根村樱桃种植投资项目</td><td>坡根村</td><td>县农投公司</td><td>2020-04-28 ~ 2026-04-27</td><td>1.5000</td><td>7.5000</td><td>6.9000</td><td>0.6000</td></tr>
+        <tr class="proj-sub-row hidden" data-parent="grp-樱桃种植投资项目"><td>↳ 杨村村樱桃种植投资项目</td><td>杨村村</td><td>县农投公司</td><td>2020-04-28 ~ 2026-04-27</td><td>1.5000</td><td>7.5000</td><td>6.9000</td><td>0.6000</td></tr>
+        <tr class="proj-sub-row hidden" data-parent="grp-樱桃种植投资项目"><td>↳ 沙陀村樱桃种植投资项目</td><td>沙陀村</td><td>县农投公司</td><td>2020-04-28 ~ 2026-04-27</td><td>1.5000</td><td>7.5000</td><td>6.9000</td><td>0.6000</td></tr>
+        <tr class="proj-sub-row hidden" data-parent="grp-樱桃种植投资项目"><td>↳ 窑湾村樱桃种植投资项目</td><td>窑湾村</td><td>县农投公司</td><td>2020-04-28 ~ 2026-04-27</td><td>1.5000</td><td>7.5000</td><td>6.9000</td><td>0.6000</td></tr>
+        <tr class="proj-sub-row hidden" data-parent="grp-樱桃种植投资项目"><td>↳ 罗门村樱桃种植投资项目</td><td>罗门村</td><td>县农投公司</td><td>2020-04-28 ~ 2026-04-27</td><td>1.5000</td><td>7.5000</td><td>6.9000</td><td>0.6000</td></tr>
+        <tr class="proj-sub-row hidden" data-parent="grp-樱桃种植投资项目"><td>↳ 胡原村樱桃种植投资项目</td><td>胡原村</td><td>县农投公司</td><td>2020-04-28 ~ 2026-04-27</td><td>1.5000</td><td>7.5000</td><td>6.9000</td><td>0.6000</td></tr>
+        <tr class="proj-sub-row hidden" data-parent="grp-樱桃种植投资项目"><td>↳ 虎庙村樱桃种植投资项目</td><td>虎庙村</td><td>县农投公司</td><td>2020-04-28 ~ 2026-04-27</td><td>1.5000</td><td>7.5000</td><td>6.9000</td><td>0.6000</td></tr>
+        <tr class="proj-sub-row hidden" data-parent="grp-樱桃种植投资项目"><td>↳ 马西村樱桃种植投资项目</td><td>马西村</td><td>县农投公司</td><td>2020-04-28 ~ 2026-04-27</td><td>1.5000</td><td>7.5000</td><td>6.9000</td><td>0.6000</td></tr>
+        <tr class="proj-main-row" data-group="grp-70_万元集体经济项目"><td><span class="proj-name proj-name-link" onclick="viewProjectIncome('70 万元集体经济项目')">70 万元集体经济项目</span><button class="expand-btn" onclick="toggleGroup(this)">▶ 展开明细</button></td><td>焦河村、石门村、霍岭村</td><td>县农投公司</td><td>2018-08-10 ~ 2026-08-10</td><td>14.7000</td><td>92.4000</td><td>81.9000</td><td>10.5000</td></tr>
+        <tr class="proj-sub-row hidden" data-parent="grp-70_万元集体经济项目"><td>↳ 焦河村70 万元集体经济项目</td><td>焦河村</td><td>县农投公司</td><td>2018-08-10 ~ 2026-08-10</td><td>4.9000</td><td>30.8000</td><td>27.3000</td><td>3.5000</td></tr>
+        <tr class="proj-sub-row hidden" data-parent="grp-70_万元集体经济项目"><td>↳ 石门村70 万元集体经济项目</td><td>石门村</td><td>县农投公司</td><td>2018-08-10 ~ 2026-08-10</td><td>4.9000</td><td>30.8000</td><td>27.3000</td><td>3.5000</td></tr>
+        <tr class="proj-sub-row hidden" data-parent="grp-70_万元集体经济项目"><td>↳ 霍岭村70 万元集体经济项目</td><td>霍岭村</td><td>县农投公司</td><td>2018-08-10 ~ 2026-08-10</td><td>4.9000</td><td>30.8000</td><td>27.3000</td><td>3.5000</td></tr>
+      </tbody>
+    </table></div>
   </div>
 
   <!-- 收益台账 -->
   <div id="panel-income" class="panel">
     <div class="filter-bar">
-      <button class="back-btn" onclick="backToProjects()">← 返回项目总览</button>
       <label>筛选项目：</label>
       <select id="filter-income" onchange="filterRows('tbody-income','filter-income')">
-<option value="">全部项目"</option>
-<option value="光伏电站项目">☀️ 光伏电站项目"</option>
-<option value="樱桃种植投资项目">🍒 樱桃种植投资项目"</option>
-<option value="20万元集体经济项目">🏘️ 20万元集体经济项目"</option>
-<option value="70 万元集体经济项目">🏛️ 70 万元集体经济项目"</option>
-<option value="2022年洛宁县马店镇吕村村银洞河露营基地项目">2022年洛宁县马店镇吕村村银洞河露营基地项目"</option>
-<option value="2022年洛宁县马店镇石门村花椒深加工资产投资收益项目">2022年洛宁县马店镇石门村花椒深加工资产投资收益项目"</option>
-<option value="2023年洛宁县马店镇杨村村高标准农业观光采摘园项目">2023年洛宁县马店镇杨村村高标准农业观光采摘园项目"</option>
-<option value="2023年洛宁县马店镇环洛河现代农业产业园区水产养殖项目">2023年洛宁县马店镇环洛河现代农业产业园区水产养殖项目"</option>
+<option value="">全部项目</option>
+<option value="光伏电站项目">☀️ 光伏电站项目</option>
+<option value="樱桃种植投资项目">🍒 樱桃种植投资项目</option>
+<option value="20万元集体经济项目">🏘️ 20万元集体经济项目</option>
+<option value="70 万元集体经济项目">🏛️ 70 万元集体经济项目</option>
+<option value="2022年洛宁县马店镇吕村村银洞河露营基地项目">2022年洛宁县马店镇吕村村银洞河露营基地项目</option>
+<option value="2022年洛宁县马店镇石门村花椒深加工资产投资收益项目">2022年洛宁县马店镇石门村花椒深加工资产投资收益项目</option>
+<option value="2023年洛宁县马店镇杨村村高标准农业观光采摘园项目">2023年洛宁县马店镇杨村村高标准农业观光采摘园项目</option>
+<option value="2023年洛宁县马店镇环洛河现代农业产业园区水产养殖项目">2023年洛宁县马店镇环洛河现代农业产业园区水产养殖项目</option>
       </select>
     </div>
     <div class="tbl-wrap"><table>
@@ -850,11 +502,11 @@
     <div class="filter-bar">
       <label>筛选项目：</label>
       <select id="filter-arrears" onchange="filterRows('tbody-arrears','filter-arrears')">
-<option value="">全部项目"</option>
-<option value="樱桃种植投资项目">🍒 樱桃种植投资项目"</option>
-<option value="70 万元集体经济项目">🏛️ 70 万元集体经济项目"</option>
-<option value="2022年洛宁县马店镇吕村村银洞河露营基地项目">2022年洛宁县马店镇吕村村银洞河露营基地项目"</option>
-<option value="2023年洛宁县马店镇环洛河现代农业产业园区水产养殖项目">2023年洛宁县马店镇环洛河现代农业产业园区水产养殖项目"</option>
+<option value="">全部项目</option>
+<option value="樱桃种植投资项目">🍒 樱桃种植投资项目</option>
+<option value="70 万元集体经济项目">🏛️ 70 万元集体经济项目</option>
+<option value="2022年洛宁县马店镇吕村村银洞河露营基地项目">2022年洛宁县马店镇吕村村银洞河露营基地项目</option>
+<option value="2023年洛宁县马店镇环洛河现代农业产业园区水产养殖项目">2023年洛宁县马店镇环洛河现代农业产业园区水产养殖项目</option>
       </select>
     </div>
     <div class="tbl-wrap"><table>
@@ -889,8 +541,8 @@
     <div class="filter-bar">
       <label>筛选项目：</label>
       <select id="filter-dist" onchange="filterRows('tbody-dist','filter-dist')">
-<option value="">全部项目"</option>
-<option value="暂无分配记录">暂无分配记录"</option>
+<option value="">全部项目</option>
+<option value="暂无分配记录">暂无分配记录</option>
       </select>
     </div>
     <div class="tbl-wrap"><table>
@@ -924,38 +576,18 @@ function toggleGroup(btn) {
   subs.forEach(r => r.classList.toggle('hidden', open));
   btn.textContent = open ? '▶ 展开明细' : '▼ 收起明细';
 }
-function toggleCardGroup(btn) {
-  const card = btn.closest('.proj-card');
-  const gid = card.dataset.group;
-  const subs = card.querySelector('.proj-subs[data-parent="' + gid + '"]');
-  if (!subs) return;
-  const open = !subs.classList.contains('hidden');
-  subs.classList.toggle('hidden', open);
-  btn.textContent = open ? '▶ 展开明细' : '▼ 收起明细';
-}
 function viewProjectIncome(projectName) {
   const sel = document.getElementById('filter-income');
   if (sel) {
-    let found = false;
     for (let o of sel.options) {
-      if (o.value === projectName) { sel.value = o.value; found = true; break; }
-    }
-    if (!found) {
-      for (let o of sel.options) {
-        if (o.value && projectName.includes(o.value)) { sel.value = o.value; break; }
-      }
+      if (o.value && projectName.includes(o.value)) { sel.value = o.value; break; }
     }
     filterRows('tbody-income', 'filter-income');
   }
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab')[1].classList.add('active');
   document.getElementById('panel-income').classList.add('active');
-}
-function backToProjects() {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelector('.tab').classList.add('active');
-  document.getElementById('panel-projects').classList.add('active');
 }
 </script>
 </body>
